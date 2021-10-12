@@ -5,7 +5,6 @@ from odoo.exceptions import UserError
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-
     def check_limit(self):
         self.ensure_one()
         partner = self.partner_id
@@ -31,7 +30,6 @@ class SaleOrder(models.Model):
                     raise UserError(_("You can not confirm Sale Order." + msg))
 
             return True
-
 
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
@@ -70,7 +68,6 @@ class SaleOrder(models.Model):
                         )
                         raise UserError(_("You can not confirm Sale Order." + msg))
             return super(SaleOrder, self).create(values)
-
 
     def write(self, values):
         partner = self.partner_id.id or values.get("partner_id")
