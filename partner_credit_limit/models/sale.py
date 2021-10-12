@@ -1,6 +1,3 @@
-# See LICENSE file for full copyright and licensing details.
-
-
 from odoo import api, models, _
 from odoo.exceptions import UserError
 
@@ -8,7 +5,7 @@ from odoo.exceptions import UserError
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    @api.multi
+
     def check_limit(self):
         self.ensure_one()
         partner = self.partner_id
@@ -35,7 +32,7 @@ class SaleOrder(models.Model):
 
             return True
 
-    @api.multi
+
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
         for order in self:
@@ -74,7 +71,7 @@ class SaleOrder(models.Model):
                         raise UserError(_("You can not confirm Sale Order." + msg))
             return super(SaleOrder, self).create(values)
 
-    @api.multi
+
     def write(self, values):
         partner = self.partner_id.id or values.get("partner_id")
         partner = self.env["res.partner"].browse([partner])
