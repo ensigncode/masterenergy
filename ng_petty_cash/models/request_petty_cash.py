@@ -27,10 +27,8 @@ class RequestPettyCash(models.Model):
 
     state = fields.Selection([("draft", "New"), ("submitted", "Submitted"), ("done", "Done")], default="draft")
 
-
     def submit(self):
         return self.write({"state": "submitted"})
-
 
     def done(self):
         self.approval_manager = self.env.uid
@@ -50,7 +48,6 @@ class RequestPettyCash(models.Model):
                 }
             )
             return self.write({"state": "done"})
-
 
     def return_submit(self):
         return self.write({"state": "draft"})

@@ -8,10 +8,6 @@
      Petty Cash
     """,
     "category": "Hidden",
-    "data": [
-        "security/ir.model.access.csv",
-        "security/petty_cash_security.xml",
-        "views/request_petty_cash_view.xml",
-    ],
+    "data": ["security/ir.model.access.csv", "security/petty_cash_security.xml", "views/request_petty_cash_view.xml",],
     "installable": True,
 }

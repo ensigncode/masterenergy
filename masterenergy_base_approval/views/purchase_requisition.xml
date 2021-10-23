@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="action_purchase_requisition">
+        <field name="name">Purchase Agreements</field>
+        <field name="model">purchase.requisition</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,hod,audit,in_progress,open,done" attrs="{'invisible': [('is_quantity_copy', '=', 'none')]}" />
+            </xpath>
+            <xpath expr="//button[@name='action_in_progress']" position="replace">
+                <button name="action_in_progress" states="audit" string="Confirm" type="object" class="btn-primary" groups="masterenergy_base_approval.group_internal_audit"/>
+                <button name="action_submit_to_hod" states="draft" string="Submit" type="object" class="btn-primary"/>
+                 <button name="action_hod_approve" states="hod" string="Approve" type="object" class="btn-primary" groups="masterenergy_base_approval.group_hod"/>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel']" position="replace">
+                 <button name="action_cancel" states="draft,hod,audit,in_progress,ongoing" string="Cancel" type="object"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
