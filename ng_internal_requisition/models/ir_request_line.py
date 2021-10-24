@@ -2,17 +2,10 @@ from datetime import datetime
 from odoo import models, fields, api
 
 
-class IRRequestLine(models.Model):
-    _name = "ng.ir.request.line"
-
-    request_id = fields.Many2one(comodel_name="ng.ir.request", string="Request")
-    product_id = fields.Char(string="Product")
-    quantity = fields.Float(string="Quantity", default=1.0)
-    uom = fields.Many2one(comodel_name="product.uom", string="U.O.M")
-
 
 class IRRequestApprove(models.Model):
     _name = "ng.ir.request.approve"
+    _description = "ng.ir.request.approve"
 
     STATE = [
         ("not_available", "Not Available"),
@@ -24,7 +17,7 @@ class IRRequestApprove(models.Model):
     request_id = fields.Many2one(comodel_name="ng.ir.request", string="Request")
     product_id = fields.Many2one(comodel_name="product.product", string="Product")
     quantity = fields.Float(string="Quantity", default=1.0)
-    uom = fields.Many2one(comodel_name="product.uom", string="U.O.M")
+    uom = fields.Many2one(comodel_name="uom.uom", string="UOM")
     qty = fields.Float(string="Qty Available", compute="_compute_qty")
     state = fields.Selection(selection=STATE, string="State", compute="_compute_state", store=False)
     purchase_agreement = fields.Char(string="Purchase Agreement")
@@ -32,7 +25,6 @@ class IRRequestApprove(models.Model):
     transferred = fields.Boolean(string="Transferred", default=False)
 
     @api.depends("state")
-    @api.one
     def _compute_to_procure(self):
         to_procure = self.state == "partially_available" or self.state == "not_available"
         if self.purchase_agreement:
@@ -41,7 +33,6 @@ class IRRequestApprove(models.Model):
             self.to_procure = to_procure
 
     @api.depends("product_id")
-    @api.one
     def _compute_qty(self):
         location_id = self.request_id.src_location_id.id
         product_id = self.product_id.id
@@ -51,7 +42,6 @@ class IRRequestApprove(models.Model):
         self.qty = sum([stock_quant.quantity for stock_quant in stock_quants])
 
     @api.depends("qty")
-    @api.one
     def _compute_state(self):
         if self.qty <= 0:
             self.state = "not_available"
@@ -60,8 +50,7 @@ class IRRequestApprove(models.Model):
         else:
             self.state = "available"
 
-    @api.multi
-    def procure(self, context):
+    def procure(self):
         product_id, quantity = self.product_id, self.quantity - self.qty
         requisition = self.env["purchase.requisition"]
         line = self.env["purchase.requisition.line"]

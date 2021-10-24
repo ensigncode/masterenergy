@@ -4,6 +4,15 @@ from odoo.exceptions import UserError
 
 from urllib.parse import urljoin, urlencode
 
+STATES = [
+        ("draft", "Draft"),
+        ("submit", "HOD"),
+        ("approved", "Main manager"),
+        ("warehouse", "Warehouse Officer"),
+        ("approval", "Warehouse Manager"),
+        ("transfer", "Transfer"),
+        ("done", "Done"),
+    ]
 
 class HRDepartment(models.Model):
     """."""
@@ -29,44 +38,31 @@ class IRRequest(models.Model):
         hr_employee = self.env["hr.employee"].search([("user_id", "=", self._current_login_user())], limit=1)
         return hr_employee.id
 
-    REQUEST_STAGE = [
-        ("draft", "Draft"),
-        ("submit", "Department Manager"),
-        ("approved", "Main manager"),
-        ("warehouse", "Warehouse Officer"),
-        ("approval", "Warehouse Manager"),
-        ("transfer", "Transfer"),
-        ("done", "Done"),
-    ]
-
-    name = fields.Char(string="Number", default="/")
-    state = fields.Selection(selection=REQUEST_STAGE, default="draft", track_visibility="onchange")
+    name = fields.Char(string="Reference", default="/")
+    state = fields.Selection(selection=STATES, default="draft", tracking=True)
     requester = fields.Many2one(
-        comodel_name="res.users", string="Requester", default=_current_login_user, track_visibility="onchange"
+        comodel_name="res.users", string="Requestor", default=_current_login_user, tracking=True
     )
     end_user = fields.Many2one(
-        comodel_name="hr.employee", string="End User", default=_current_login_employee, required=True
+        comodel_name="hr.employee", string="User", default=_current_login_employee, required=True
     )
     request_date = fields.Datetime(
         string="Request Date", default=lambda self: datetime.now(), help="The day in which request was initiated"
     )
-    request_deadline = fields.Datetime(string="Request Deadline")
-    hod = fields.Many2one(comodel_name="hr.employee", related="end_user.parent_id", string="H.O.D")
+    request_deadline = fields.Datetime(string="Deadline")
+    hod = fields.Many2one(comodel_name="hr.employee", related="end_user.parent_id", string="HOD")
     department = fields.Many2one(comodel_name="hr.department", related="end_user.department_id", string="Department")
     dst_location_id = fields.Many2one(
         comodel_name="stock.location",
         string="Destination Location",
         help="Departmental Stock Location",
-        track_visibility="onchange",
+        tracking=True,
     )
     src_location_id = fields.Many2one(
         comodel_name="stock.location",
         string="Source Location",
         help="Departmental Stock Location",
-        track_visibility="onchange",
-    )
-    request_ids = fields.One2many(
-        comodel_name="ng.ir.request.line", inverse_name="request_id", string="Request Line", required=True
+        tracking=True,
     )
     approve_request_ids = fields.One2many(
         comodel_name="ng.ir.request.approve", inverse_name="request_id", string="Request Line", required=True
@@ -83,7 +79,6 @@ class IRRequest(models.Model):
     )
 
     @api.depends("approve_request_ids")
-    @api.one
     def _compute_availabilty(self):
         count_total = len(self.approve_request_ids)
         count_avail = len([appr_id.state for appr_id in self.approve_request_ids if appr_id.state == "available"])
@@ -96,24 +91,25 @@ class IRRequest(models.Model):
 
     @api.model
     def create(self, vals):
-        rec_id = super(IRRequest, self).create(vals)
-        return rec_id
+        seq = self.env["ir.sequence"].next_by_code("ng.ir.request")
+        vals.update(name=seq)
+        res = super(IRRequest, self).create(vals)
+        return res
 
-    @api.multi
-    def submit(self, context):
-        if not self.request_ids:
+    def submit(self):
+        if not self.approve_request_ids:
             raise UserError("You can not submit an empty item list for requisition.")
         else:
             # fetch email template.
-            seq = self.env["ir.sequence"].next_by_code("ng.ir.request")
             recipient = self.recipient("hod", self.hod)
             url = self.request_link()
             mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_submit")
             mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=True)
-            self.write({"state": "submit", "name": seq})
+            self.write({"state": "submit"})
 
-    @api.multi
-    def department_manager_approve(self, context):
+
+    def department_manager_approve(self):
+        context = self.env.context
         if self:
             approved = context.get("approved")
             if not approved:
@@ -133,8 +129,9 @@ class IRRequest(models.Model):
                 mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=True)
                 self.write({"state": "approved"})
 
-    @api.multi
-    def main_manager_approve(self, context):
+
+    def main_manager_approve(self):
+        context = self.env.context
         approved = context.get("approved")
         if not approved:
             # send mail to the author.
@@ -149,8 +146,8 @@ class IRRequest(models.Model):
             # move to next level and send mail
             self.write({"state": "warehouse"})
 
-    @api.multi
-    def warehouse_officer_confirm(self, context):
+    def warehouse_officer_confirm(self):
+        context = self.env.context
         if not self.approve_request_ids:
             raise UserError("Please add requested items.")
         else:
@@ -160,7 +157,7 @@ class IRRequest(models.Model):
             mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=True)
             self.write({"state": "approval"})
 
-    @api.multi
+
     def warehouse_officer_confirm_qty(self):
         """Forward the available quantity to warehouse officer."""
         clone = self.copy()
@@ -198,8 +195,8 @@ class IRRequest(models.Model):
         else:
             raise UserError("No line item(s) defined.")
 
-    @api.multi
-    def confirmation(self, context):
+    def confirmation(self):
+        context = self.env.context
         approved = context.get("approved")
         if not approved:
             # send mail to the author.
@@ -214,7 +211,6 @@ class IRRequest(models.Model):
             # move to next level and send mail
             self.write({"state": "transfer"})
 
-    @api.multi
     def do_transfer(self):
         if self:
             src_location_id = self.src_location_id.id

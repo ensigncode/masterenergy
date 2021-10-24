@@ -1,14 +1,14 @@
 from odoo import api, fields, models
 
 
-class IRRequest(models.TransientModel):
+class IrRequestWizard(models.TransientModel):
     """docstring for IRReasons"""
 
     _name = "ir.request.wizard"
+    _description = "ir.request.wizard"
 
     reason = fields.Text(string="Reason", required=True)
 
-    @api.multi
     def reject(self):
         request_id = self.env.context.get("request_id")
         if request_id:
