@@ -28,29 +28,36 @@
                         <button name="department_manager_approve" states="submit" string="Reject" type="object" groups="ng_internal_requisition.ng_internal_requisition_dept_manager" context="{'approved':False}" />
                         <button name="main_manager_approve" states="approved" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" groups="ng_internal_requisition.ng_internal_requisition_main_manager" />
                         <button name="main_manager_approve" states="approved" string="Reject" type="object" context="{'approved':False}" groups="ng_internal_requisition.ng_internal_requisition_main_manager" />
-                        <button name="warehouse_officer_confirm" string="Confirm" type="object" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" class="oe_highlight" attrs="{'invisible': ['|', ('availaibility', '=', False), ('state', 'not in',['warehouse'] )]}" />
-                        <button name="warehouse_officer_confirm_qty" states="warehouse" string="Confirm Available Quantity" type="object" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" class="oe_link" />
-                        <button name="confirmation" states="approval" string="Confirm" type="object" context="{'approved':True}" class="oe_highlight" groups="stock.group_stock_manager" />
-                        <button name="confirmation" states="approval" string="Reject" type="object" context="{'approved':False}" groups="stock.group_stock_manager" />
-                        <button name="do_transfer" states="transfer" string="Do Transfer" class="oe_highlight" type="object" groups="stock.group_stock_manager" />
+                        <button name="warehouse_officer_confirm" string="Confirm" type="object" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" class="oe_highlight" attrs="{'invisible': ['|', ('availaibility', '=', False), ('state', 'not in',['audit'] )]}" />
+                        <button name="check_quantity_available" states="approval" string="Confirm Available Quantity" type="object" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" class="oe_link" />
+                        <button name="confirmation" states="audit" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" />
+                        <!-- groups="stock.group_stock_manager" -->
+                        <!--      <button name="confirmation" states="approval" string="Reject" type="object" context="{'approved':False}" groups="stock.group_stock_manager" /> -->
+                        <!--    <button name="do_transfer" states="transfer" string="Do Transfer" class="oe_highlight" type="object" groups="stock.group_stock_manager" /> -->
                         <field name="state" widget="statusbar" />
                     </header>
                     <sheet>
                         <group>
-                            <field name="availaibility" invisible="1" />
                             <group>
+                                <field name="availaibility" invisible="1" />
                                 <field name="name" readonly="1" />
                                 <field name="requester" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}" />
                                 <field name="request_date" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}" />
                                 <field name="request_deadline" required="1" attrs="{'readonly': [('state', '!=', 'draft')]}" />
                                 <field name="warehouse_id" states="warehouse" attrs="{'required' : [('state', '=', 'warehouse')]}" />
-                                <field name="src_location_id" states="warehouse" domain="[('usage', '=', 'internal')]" attrs="{'required' : [('state', '=', 'warehouse')]}" />
                             </group>
                             <group>
                                 <field name="end_user" attrs="{'readonly': [('state', '!=', 'draft')]}" />
                                 <field name="hod" />
                                 <field name="department" attrs="{'readonly': [('state', '!=', 'draft')]}" />
-                                <field name="dst_location_id" states="warehouse" attrs="{'required' : [('state', '=', 'warehouse')]}" />
+                      
+                            </group>
+                            <group>
+                                <field name="src_location_id" domain="[('usage', '=', 'internal')]" attrs="{'required' : [('state', 'in', ['audit','approved', 'approval'])]}" states="approval,audit,approved" />
+                            </group>
+                            <group>
+                                <field name="dst_location_id" states="approval,audit,approved" attrs="{'required' : [('state', 'in',
+                                    ['approval', 'audit', 'approved'])]}" />
                             </group>
                         </group>
                         <notebook>
@@ -68,7 +75,7 @@
                                         <field name="to_procure" invisible="1" />
                                         <field name="transferred" readonly="1" />
                                         <field name="state" string="State" />
-                                        <button name="procure" type="object" string="Procure" class="oe_link" attrs="{'invisible': ['|', ('to_procure', '!=', True), ('transferred', '=', True)]}" />
+                                        <button name="procure" type="object" string="Procure" class="oe_link" attrs="{'invisible': [('to_procure', '!=', True)]}" groups="purchase.group_purchase_user" />
                                     </tree>
                                 </field>
                             </page>

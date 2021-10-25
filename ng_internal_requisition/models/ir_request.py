@@ -7,10 +7,10 @@ from urllib.parse import urljoin, urlencode
 STATES = [
         ("draft", "Draft"),
         ("submit", "HOD"),
-        ("approved", "Main manager"),
-        ("warehouse", "Warehouse Officer"),
-        ("approval", "Warehouse Manager"),
-        ("transfer", "Transfer"),
+        ("approved", "Store Officer"), # Store Officer is a Purchase user
+        ("audit", "Audit Officer"),
+        ("approval", "Plant Manager"),
+        ("transfer", "Transfer "),
         ("done", "Done"),
     ]
 
@@ -41,10 +41,10 @@ class IRRequest(models.Model):
     name = fields.Char(string="Reference", default="/")
     state = fields.Selection(selection=STATES, default="draft", tracking=True)
     requester = fields.Many2one(
-        comodel_name="res.users", string="Requestor", default=_current_login_user, tracking=True
+        comodel_name="res.users", string="User", default=_current_login_user, tracking=True
     )
     end_user = fields.Many2one(
-        comodel_name="hr.employee", string="User", default=_current_login_employee, required=True
+        comodel_name="hr.employee", string="Employee", default=_current_login_employee, required=True
     )
     request_date = fields.Datetime(
         string="Request Date", default=lambda self: datetime.now(), help="The day in which request was initiated"
@@ -144,7 +144,7 @@ class IRRequest(models.Model):
             }
         else:
             # move to next level and send mail
-            self.write({"state": "warehouse"})
+            self.write({"state": "audit"})
 
     def warehouse_officer_confirm(self):
         context = self.env.context
@@ -158,58 +158,20 @@ class IRRequest(models.Model):
             self.write({"state": "approval"})
 
 
-    def warehouse_officer_confirm_qty(self):
-        """Forward the available quantity to warehouse officer."""
-        clone = self.copy()
-        available_aggregate = sum([approve_request_id.qty for approve_request_id in self.approve_request_ids])
-        if available_aggregate <= 0:
-            raise UserError("The item line is empty or quantity available can not be forwarded.")
-            return False
-        if self.approve_request_ids and self.request_ids:
-            for index, approve_request_id in enumerate(self.approve_request_ids):
-                approve_id = approve_request_id.copy()
-                availqty, reqqty = approve_id.qty, approve_id.quantity
-                if availqty <= reqqty:
-                    approve_id.write({"request_id": clone.id, "quantity": availqty})
-                    self.approve_request_ids[index].write({"quantity": reqqty - availqty})
-                else:  # Detach from self record
-                    approve_id.sudo().unlink()
-            for request_id in self.request_ids:
-                req = request_id.copy()
-                req.write({"request_id": clone.id})
-            clone.write({"state": "approval", "name": self.name})
-            if not clone.approve_request_ids:
-                clone.sudo().unlink()
-                raise UserError("There is enough quantity available for confirmation, make use of the confirm button.")
-                return False
-            if sum([apr.quantity for apr in self.approve_request_ids]) == 0:
-                self.unlink()
-            return {
-                "type": "ir.actions.act_window",
-                "res_model": "ng.ir.request",
-                "views": [[False, "form"]],
-                "context": {"request_id": self.id},
-                "res_id": clone.id,
-                "target": "main",
-            }
-        else:
-            raise UserError("No line item(s) defined.")
+    def check_quantity_available(self):
+        """"""
+        for rec in self:
+            for line in rec.approve_request_ids:
+                line._compute_quantity_available()
 
     def confirmation(self):
         context = self.env.context
         approved = context.get("approved")
         if not approved:
-            # send mail to the author.
-            return {
-                "type": "ir.actions.act_window",
-                "res_model": "ir.request.wizard",
-                "views": [[False, "form"]],
-                "context": {"request_id": self.id},
-                "target": "new",
-            }
+            pass
         else:
             # move to next level and send mail
-            self.write({"state": "transfer"})
+            self.write({"state": "approval"})
 
     def do_transfer(self):
         if self:
