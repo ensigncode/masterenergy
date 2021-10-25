@@ -20,7 +20,7 @@ class IRRequestApprove(models.Model):
     uom = fields.Many2one(comodel_name="uom.uom", string="UOM")
     qty = fields.Float(string="Qty Available", compute="_compute_quantity_available")
     state = fields.Selection(selection=STATE, string="State", compute="_compute_state", store=False)
-    purchase_agreement = fields.Char(string="Purchase Agreement")
+    purchase_agreement_id = fields.Many2one(comodel_name='purchase.requisition', string="Purchase Agreement", readonly=True)
     to_procure = fields.Boolean(string="To Procure", compute="_compute_to_procure")
     transferred = fields.Boolean(string="Transferred", default=False)
 
@@ -28,7 +28,7 @@ class IRRequestApprove(models.Model):
     def _compute_to_procure(self):
         for rec in self:
             to_procure = rec.state == "partially_available" or rec.state == "not_available"
-            if rec.purchase_agreement:
+            if rec.purchase_agreement_id:
                 rec.to_procure = False
             else:
                 rec.to_procure = to_procure
@@ -68,7 +68,7 @@ class IRRequestApprove(models.Model):
             "price_unit": product_id.standard_price,
         }
         line.create(payload)
-        self.purchase_agreement = requisition_id.name
+        self.purchase_agreement_id = requisition_id.id
         # Rename the purchase requestion name to ref
-        origin = "{}/{}".format(request_identity, requisition_id.name)
+        origin = "{}".format(request_identity,)
         requisition_id.write({"name": origin})

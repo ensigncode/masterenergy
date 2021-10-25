@@ -10,7 +10,7 @@ STATES = [
         ("approved", "Store Officer"), # Store Officer is a Purchase user
         ("audit", "Audit Officer"),
         ("approval", "Plant Manager"),
-        ("transfer", "Transfer "),
+        ("ready", "Ready "),
         ("done", "Done"),
     ]
 
@@ -104,7 +104,7 @@ class IRRequest(models.Model):
             recipient = self.recipient("hod", self.hod)
             url = self.request_link()
             mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_submit")
-            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=True)
+            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
             self.write({"state": "submit"})
 
 
@@ -126,7 +126,7 @@ class IRRequest(models.Model):
                 url = self.request_link()
                 recipient = self.recipient("department_manager", self.department)
                 mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_approval")
-                mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=True)
+                mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
                 self.write({"state": "approved"})
 
 
@@ -154,7 +154,7 @@ class IRRequest(models.Model):
             url = self.request_link()
             recipient = self.recipient("department_manager", self.department)
             mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_warehouse_officer")
-            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=True)
+            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
             self.write({"state": "approval"})
 
 
@@ -173,11 +173,15 @@ class IRRequest(models.Model):
             # move to next level and send mail
             self.write({"state": "approval"})
 
-    def do_transfer(self):
+    def action_do_transfer(self):
         if self:
             src_location_id = self.src_location_id.id
             dst_location_id = self.dst_location_id.id
-            domain = [("code", "=", "internal"), ("warehouse_id", "=", self.warehouse_id.id), ("active", "=", True)]
+            domain = [
+                ("code", "=", "internal"),
+                ("active", "=", True),
+                ("default_location_src_id", "=", self.src_location_id.id),
+            ]
             stock_picking = self.env["stock.picking"]
             picking_type = self.env["stock.picking.type"].search(domain, limit=1)
             payload = {
@@ -210,37 +214,28 @@ class IRRequest(models.Model):
         self.write({"state": "done"})
 
     def process(self, picking_id):
-        pick_to_do = self.env["stock.picking"]
-        pick_to_backorder = self.env["stock.picking"]
+        pickings_to_do = self.env['stock.picking']
+        pickings_not_to_do = self.env['stock.picking']
+
         for picking in picking_id:
             # If still in draft => confirm and assign
-            if picking.state == "draft":
+            if picking.state == 'draft':
                 picking.action_confirm()
-                if picking.state != "assigned":
+                if picking.state != 'assigned':
                     picking.action_assign()
-                    if picking.state != "assigned":
-                        raise UserError(
-                            (
-                                "Could not reserve all requested products. Please use the 'Mark as Todo' button to handle the reservation manually."
-                            )
-                        )
-            for move in picking.move_lines:
+                    if picking.state != 'assigned':
+                        raise UserError(_("Could not reserve all requested products. Please use the \'Mark as Todo\' button to handle the reservation manually."))
+            for move in picking.move_lines.filtered(lambda m: m.state not in ['done', 'cancel']):
                 for move_line in move.move_line_ids:
                     move_line.qty_done = move_line.product_uom_qty
-            if picking._check_backorder():
-                pick_to_backorder |= picking
-                continue
-            pick_to_do |= picking
-        # Process every picking that do not require a backorder, then return a single backorder wizard for every other ones.
-        if pick_to_do:
-            pick_to_do.action_done()
-            url = self.request_link()
-            recipient = self.recipient("department_manager", self.department)
-            mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_transfer")
-            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=True)
-        if pick_to_backorder:
-            return pick_to_backorder.action_generate_backorder_wizard()
-        return False
+
+        pickings_to_validate = picking_id.ids
+        print('!!!!!!!!!!!!!!!!!!!!!!!!!', pickings_to_validate)
+        if pickings_to_validate:
+            pickings_to_validate = self.env['stock.picking'].browse(pickings_to_validate)
+            pickings_to_validate = pickings_to_validate - pickings_not_to_do
+            return pickings_to_validate.with_context(skip_immediate=True).button_validate()
+        return True
 
     def recipient(self, recipient, model):
         """Return recipient email address."""
@@ -277,3 +272,12 @@ class IRRequest(models.Model):
         query = {"db": self.env.cr.dbname}
         res = urljoin(base_url, "?%s#%s" % (urlencode(query), urlencode(fragment)))
         return res
+
+    def plant_manager_approve(self):
+        for rec in self:
+            rec.write({'state': 'ready'})
+
+    def accept_requisition(self):
+        for rec in self:
+            rec.action_do_transfer()
+            # rec.write({'state': 'transfer'})
