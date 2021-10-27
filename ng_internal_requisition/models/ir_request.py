@@ -1,5 +1,5 @@
 from datetime import datetime
-from odoo import models, fields, api
+from odoo import models, fields, api,_
 from odoo.exceptions import UserError
 
 from urllib.parse import urljoin, urlencode
@@ -10,6 +10,7 @@ STATES = [
         ("approved", "Store Officer"), # Store Officer is a Purchase user
         ("audit", "Audit Officer"),
         ("approval", "Plant Manager"),
+        ("approval1", "Store Officer"),
         ("ready", "Ready "),
         ("done", "Done"),
     ]
@@ -234,6 +235,7 @@ class IRRequest(models.Model):
         if pickings_to_validate:
             pickings_to_validate = self.env['stock.picking'].browse(pickings_to_validate)
             pickings_to_validate = pickings_to_validate - pickings_not_to_do
+            pickings_to_validate.action_confirm()
             return pickings_to_validate.with_context(skip_immediate=True).button_validate()
         return True
 

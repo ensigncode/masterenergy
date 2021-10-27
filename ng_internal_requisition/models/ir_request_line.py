@@ -1,5 +1,5 @@
 from datetime import datetime
-from odoo import models, fields, api
+from odoo import models, fields, api,_
 
 
 
@@ -28,8 +28,8 @@ class IRRequestApprove(models.Model):
     @api.depends('product_id', 'request_id.state')
     def _compute_button_show_state(self):
         for rec in self:
-            rec.button_show_state = rec.request_id.state == 'ready'
-            
+            rec.button_show_state = rec.request_id.state == 'approval1'
+
 
 
 
