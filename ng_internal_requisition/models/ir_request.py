@@ -46,12 +46,13 @@ class IRRequest(models.Model):
     end_user = fields.Many2one(
         comodel_name="hr.employee", string="Employee", default=_current_login_employee, required=True
     )
-    request_date = fields.Datetime(
-        string="Request Date", default=lambda self: datetime.now(), help="The day in which request was initiated"
+    request_date = fields.Date(
+        string="Request Date", default=lambda self: fields.Date.today(), help="The day in which request was initiated"
     )
-    request_deadline = fields.Datetime(string="Deadline")
+    request_deadline = fields.Date(string="Deadline")
     hod = fields.Many2one(comodel_name="hr.employee", related="end_user.parent_id", string="HOD")
     department = fields.Many2one(comodel_name="hr.department", related="end_user.department_id", string="Department")
+    request_type = fields.Selection(selection=[('purchase', 'Purchase'), ('sale', 'Sale')], string="Request Type", required=True)
     dst_location_id = fields.Many2one(
         comodel_name="stock.location",
         string="Destination Location",
@@ -230,7 +231,6 @@ class IRRequest(models.Model):
                     move_line.qty_done = move_line.product_uom_qty
 
         pickings_to_validate = picking_id.ids
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!', pickings_to_validate)
         if pickings_to_validate:
             pickings_to_validate = self.env['stock.picking'].browse(pickings_to_validate)
             pickings_to_validate = pickings_to_validate - pickings_not_to_do
@@ -258,9 +258,6 @@ class IRRequest(models.Model):
         base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
         model_data = self.env["ir.model.data"]
         fragment.update(base_url=base_url)
-        fragment.update(
-            menu_id=model_data.get_object_reference("ng_internal_requisition", "ng_internal_requisition_menu_1")[-1]
-        )
         fragment.update(model="ng.ir.request")
         fragment.update(view_type="form")
         fragment.update(

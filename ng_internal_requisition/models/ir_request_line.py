@@ -17,12 +17,22 @@ class IRRequestApprove(models.Model):
     request_id = fields.Many2one(comodel_name="ng.ir.request", string="Request")
     product_id = fields.Many2one(comodel_name="product.product", string="Product")
     quantity = fields.Float(string="Quantity", default=1.0)
-    uom = fields.Many2one(comodel_name="uom.uom", string="UOM")
+    uom = fields.Many2one(comodel_name="uom.uom", string="UOM", related="product_id.uom_id", store=True)
     qty = fields.Float(string="Qty Available", compute="_compute_quantity_available")
     state = fields.Selection(selection=STATE, string="State", compute="_compute_state", store=False)
     purchase_agreement_id = fields.Many2one(comodel_name='purchase.requisition', string="Purchase Agreement", readonly=True)
     to_procure = fields.Boolean(string="To Procure", compute="_compute_to_procure")
     transferred = fields.Boolean(string="Transferred", default=False)
+    button_show_state = fields.Boolean(string="Show State", compute='_compute_button_show_state')
+
+    @api.depends('product_id', 'request_id.state')
+    def _compute_button_show_state(self):
+        for rec in self:
+            rec.button_show_state = rec.request_id.state == 'ready'
+            
+
+
+
 
     @api.depends("state")
     def _compute_to_procure(self):
