@@ -16,12 +16,23 @@
             <field name="comment">Internal Audit</field>
             <field name="category_id" ref="masterenergy_base_approval.module_category_masterenergy" />
         </record>
-            <record id="group_store_officer" model="res.groups">
+        <record id="group_store_officer" model="res.groups">
             <field name="name">Store Officer</field>
             <field name="comment">Store Officer</field>
             <field name="category_id" ref="masterenergy_base_approval.module_category_masterenergy" />
-            <field name="implied_ids" eval="[(4, ref('purchase.group_purchase_user'))]"/>
+            <field name="implied_ids" eval="[(4, ref('purchase.group_purchase_user'))]" />
+        </record>
+        <record id="group_plant_manager" model="res.groups">
+            <field name="name">Plant Manager</field>
+            <field name="comment">Plant Manager</field>
+            <field name="category_id" ref="masterenergy_base_approval.module_category_masterenergy" />
+            <field name="implied_ids" eval="[(4, ref('purchase.group_purchase_user'))]" />
+        </record>
+        <record id="group_group_auditor" model="res.groups">
+            <field name="name">Group Auditor</field>
+            <field name="comment">Group Auditor</field>
+            <field name="category_id" ref="masterenergy_base_approval.module_category_masterenergy" />
+            <field name="implied_ids" eval="[(4, ref('purchase.group_purchase_user'))]" />
         </record>
     </data>
 </odoo>
-

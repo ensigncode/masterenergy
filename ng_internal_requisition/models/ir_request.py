@@ -1,19 +1,20 @@
 from datetime import datetime
-from odoo import models, fields, api,_
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 from urllib.parse import urljoin, urlencode
 
 STATES = [
-        ("draft", "Draft"),
-        ("submit", "HOD"),
-        ("approved", "Store Officer"), # Store Officer is a Purchase user
-        ("audit", "Audit Officer"),
-        ("approval", "Plant Manager"),
-        ("approval1", "Store Officer"),
-        ("ready", "Ready "),
-        ("done", "Done"),
-    ]
+    ("draft", "Draft"),
+    ("submit", "HOD"),
+    ("approved", "Store Officer"),  # Store Officer is a Purchase user
+    ("audit", "Audit Officer"),
+    ("approval", "Plant Manager"),
+    ("approval1", "Store Officer"),
+    ("ready", "Ready "),
+    ("done", "Done"),
+]
+
 
 class HRDepartment(models.Model):
     """."""
@@ -41,9 +42,7 @@ class IRRequest(models.Model):
 
     name = fields.Char(string="Reference", default="/")
     state = fields.Selection(selection=STATES, default="draft", tracking=True)
-    requester = fields.Many2one(
-        comodel_name="res.users", string="User", default=_current_login_user, tracking=True
-    )
+    requester = fields.Many2one(comodel_name="res.users", string="User", default=_current_login_user, tracking=True)
     end_user = fields.Many2one(
         comodel_name="hr.employee", string="Employee", default=_current_login_employee, required=True
     )
@@ -53,18 +52,14 @@ class IRRequest(models.Model):
     request_deadline = fields.Date(string="Deadline")
     hod = fields.Many2one(comodel_name="hr.employee", related="end_user.parent_id", string="HOD")
     department = fields.Many2one(comodel_name="hr.department", related="end_user.department_id", string="Department")
-    request_type = fields.Selection(selection=[('purchase', 'Purchase'), ('sale', 'Sale')], string="Request Type", required=True)
+    request_type = fields.Selection(
+        selection=[("purchase", "Purchase"), ("sale", "Sale")], string="Request Type", required=True
+    )
     dst_location_id = fields.Many2one(
-        comodel_name="stock.location",
-        string="Destination Location",
-        help="Departmental Stock Location",
-        tracking=True,
+        comodel_name="stock.location", string="Destination Location", help="Departmental Stock Location", tracking=True,
     )
     src_location_id = fields.Many2one(
-        comodel_name="stock.location",
-        string="Source Location",
-        help="Departmental Stock Location",
-        tracking=True,
+        comodel_name="stock.location", string="Source Location", help="Departmental Stock Location", tracking=True,
     )
     approve_request_ids = fields.One2many(
         comodel_name="ng.ir.request.approve", inverse_name="request_id", string="Request Line", required=True
@@ -109,7 +104,6 @@ class IRRequest(models.Model):
             mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
             self.write({"state": "submit"})
 
-
     def department_manager_approve(self):
         context = self.env.context
         if self:
@@ -130,7 +124,6 @@ class IRRequest(models.Model):
                 mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_approval")
                 mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
                 self.write({"state": "approved"})
-
 
     def main_manager_approve(self):
         context = self.env.context
@@ -158,7 +151,6 @@ class IRRequest(models.Model):
             mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_warehouse_officer")
             mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
             self.write({"state": "approval"})
-
 
     def check_quantity_available(self):
         """"""
@@ -216,24 +208,28 @@ class IRRequest(models.Model):
         self.write({"state": "done"})
 
     def process(self, picking_id):
-        pickings_to_do = self.env['stock.picking']
-        pickings_not_to_do = self.env['stock.picking']
+        pickings_to_do = self.env["stock.picking"]
+        pickings_not_to_do = self.env["stock.picking"]
 
         for picking in picking_id:
             # If still in draft => confirm and assign
-            if picking.state == 'draft':
+            if picking.state == "draft":
                 picking.action_confirm()
-                if picking.state != 'assigned':
+                if picking.state != "assigned":
                     picking.action_assign()
-                    if picking.state != 'assigned':
-                        raise UserError(_("Could not reserve all requested products. Please use the \'Mark as Todo\' button to handle the reservation manually."))
-            for move in picking.move_lines.filtered(lambda m: m.state not in ['done', 'cancel']):
+                    if picking.state != "assigned":
+                        raise UserError(
+                            _(
+                                "Could not reserve all requested products. Please use the 'Mark as Todo' button to handle the reservation manually."
+                            )
+                        )
+            for move in picking.move_lines.filtered(lambda m: m.state not in ["done", "cancel"]):
                 for move_line in move.move_line_ids:
                     move_line.qty_done = move_line.product_uom_qty
 
         pickings_to_validate = picking_id.ids
         if pickings_to_validate:
-            pickings_to_validate = self.env['stock.picking'].browse(pickings_to_validate)
+            pickings_to_validate = self.env["stock.picking"].browse(pickings_to_validate)
             pickings_to_validate = pickings_to_validate - pickings_not_to_do
             pickings_to_validate.action_confirm()
             return pickings_to_validate.with_context(skip_immediate=True).button_validate()
@@ -274,7 +270,7 @@ class IRRequest(models.Model):
 
     def plant_manager_approve(self):
         for rec in self:
-            rec.write({'state': 'ready'})
+            rec.write({"state": "ready"})
 
     def accept_requisition(self):
         for rec in self:

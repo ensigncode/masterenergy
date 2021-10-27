@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="purchase_order_form" model="ir.ui.view">
+        <field name="name">Purchase Order</field>
+        <field name="model">purchase.order</field>
+        <field name="mode">extension</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,sent,to approve,hod,audit,purchase,group_audit" readonly="1" />
+            </xpath>
+            <xpath expr="//button[@id='draft_confirm']" position="replace">
+                <button name="button_confirm" type="object" states="group_audit" string="Confirm Order" id="draft_confirm" />
+            </xpath>
+            <xpath expr="//button[@id='bid_confirm']" position="replace">
+                <button name="button_confirm" type="object" states="to approve" string="Confirm Order" id="draft_confirm" invisible="1" />
+            </xpath>
+            <xpath expr="//button[@name='action_rfq_send']" position="before">
+                <button name="action_submit_to_hod" states="draft" string="Submit" type="object" context="{'send_rfq':True}" class="oe_highlight" />
+            </xpath>
+            <xpath expr="//button[@name='button_cancel']" position="replace">
+                <button name="button_cancel" states="draft,to approve,sent,hod,audit,purchase,group_audit" string="Cancel" type="object" />
+            </xpath>
+            <xpath expr="//button[@name='button_cancel']" position="before">
+                <button name="action_hod_approve" class="oe_highlight" states="hod" string="Approve" type="object" />
+                <button name="action_audit_approve" class="oe_highlight" states="audit" string="Approve" type="object" />
+            </xpath>
+            <xpath expr="//button[@name='button_approve']" position="replace">
+                <button name="button_approve" type="object" states='to approve' string="Approve Order" class="oe_highlight" groups="masterenergy_base_approval.group_plant_manager" />
+          
+            </xpath>
+        </field>
+    </record>
+</odoo>

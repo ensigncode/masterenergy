@@ -18,9 +18,8 @@ class PurchaseRequisition(models.Model):
 
     def action_submit_to_hod(self):
         for rec in self:
-            rec.write({'state':'hod'})
-
+            rec.write({"state": "hod"})
 
     def action_hod_approve(self):
         for rec in self:
-            rec.write({'state': 'audit'})
+            rec.write({"state": "audit"})

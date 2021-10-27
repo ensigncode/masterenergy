@@ -7,11 +7,9 @@
     """,
     "author": "Matt O'Bell",
     "website": "http://www.mattobell.com",
-
     "category": "Productivity",
     "version": "1.0.0",
     "depends": ["base", "hr", "product", "stock", "purchase", "purchase_requisition"],
-
     "data": [
         "security/security.xml",
         "security/ir.model.access.csv",
@@ -21,5 +19,4 @@
         "views/ir_request.xml",
         "wizards/ir_request.xml",
     ],
-
 }
