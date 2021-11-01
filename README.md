@@ -8,3 +8,8 @@ Staff -> HOD -> Audit -> Plant Manager -> Audit at Head office -> Head -> office
 
 
 [x] Procurement Management
+
+Maintanance
+
+1. Link Assets category with maintenance category
+2. add a many2one link to the assets list on the maintenance module
