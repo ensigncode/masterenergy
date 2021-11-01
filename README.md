@@ -1,4 +1,4 @@
-# masterenergy
+# Master Energy
 Master's Energy Addons
 
 
