@@ -8,7 +8,7 @@ STATES = [
     ("draft", "Draft"),
     ("submit", "HOD"),
     ("approved", "Store Officer"),  # Store Officer is a Purchase user
-    ("audit", "Audit Officer"),
+    ("audit", "Internal Audit"),
     ("approval", "Plant Manager"),
     ("approval1", "Store Officer"),
     ("ready", "Ready "),
@@ -125,7 +125,7 @@ class IRRequest(models.Model):
                 mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
                 self.write({"state": "approved"})
 
-    def main_manager_approve(self):
+    def store_officer_approve(self):
         context = self.env.context
         approved = context.get("approved")
         if not approved:
@@ -138,8 +138,12 @@ class IRRequest(models.Model):
                 "target": "new",
             }
         else:
-            # move to next level and send mail
-            self.write({"state": "audit"})
+            not_available = self.approve_request_ids.filtered(lambda r: r.state not in ["available", "awaiting"])
+            if not_available:
+                raise UserError("All items must be availaible before you can approve this record")
+            else:
+                # move to next level and send mail
+                self.write({"state": "audit"})
 
     def warehouse_officer_confirm(self):
         context = self.env.context
@@ -158,11 +162,17 @@ class IRRequest(models.Model):
             for line in rec.approve_request_ids:
                 line._compute_quantity_available()
 
-    def confirmation(self):
+    def internal_confirmation(self):
         context = self.env.context
         approved = context.get("approved")
         if not approved:
-            pass
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": "ir.request.wizard",
+                "views": [[False, "form"]],
+                "context": {"request_id": self.id},
+                "target": "new",
+            }
         else:
             # move to next level and send mail
             self.write({"state": "approval"})
@@ -270,7 +280,19 @@ class IRRequest(models.Model):
 
     def plant_manager_approve(self):
         for rec in self:
-            rec.write({"state": "ready"})
+            context = self.env.context
+            approved = context.get("approved")
+            if not approved:
+                return {
+                    "type": "ir.actions.act_window",
+                    "res_model": "ir.request.wizard",
+                    "views": [[False, "form"]],
+                    "context": {"request_id": self.id},
+                    "target": "new",
+                }
+            else:
+                # move to next level and send mail
+                self.write({"state": "ready"})
 
     def accept_requisition(self):
         for rec in self:

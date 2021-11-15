@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data>
+    <data noupdate="0">
         <record id="module_category_masterenergy" model="ir.module.category">
             <field name="name">Master Energy</field>
             <field name="description">Master Energy</field>

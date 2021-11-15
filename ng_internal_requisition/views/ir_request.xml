@@ -12,7 +12,6 @@
                     <field name="end_user" />
                     <field name="request_date" />
                     <field name="request_deadline" />
-                    <!-- <field name="hod" /> -->
                     <field name="state" />
                 </tree>
             </field>
@@ -23,19 +22,23 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
+                        <!-- user -->
                         <button name="submit" states="draft" string="Submit" type="object" groups="ng_internal_requisition.ng_internal_requisition_user" class="oe_highlight" />
+                        <!-- department manager -->
                         <button name="department_manager_approve" states="submit" string="Approve" type="object" groups="ng_internal_requisition.ng_internal_requisition_dept_manager" context="{'approved':True}" class="oe_highlight" />
                         <button name="department_manager_approve" states="submit" string="Reject" type="object" groups="ng_internal_requisition.ng_internal_requisition_dept_manager" context="{'approved':False}" />
-                        <button name="main_manager_approve" states="approved" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" groups="ng_internal_requisition.ng_internal_requisition_main_manager" />
-                        <button name="main_manager_approve" states="approved" string="Reject" type="object" context="{'approved':False}" groups="ng_internal_requisition.ng_internal_requisition_main_manager" />
-                        <!--                 <button name="warehouse_officer_confirm" string="Confirm" type="object" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" class="oe_highlight" attrs="{'invisible': ['|', ('availaibility', '=', False), ('state', 'not in',['audit'] )]}" /> -->
+                        <!-- store officer (main manager)-->
+                        <button name="store_officer_approve" states="approved" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" />
                         <button name="check_quantity_available" states="approved" string="Confirm Available Quantity" type="object" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" class="oe_link" />
-                        <button name="confirmation" states="audit" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" />
-                        <button name="plant_manager_approve" states="approval" string="Approve" type="object" class="oe_highlight" />
+                        <button name="store_officer_approve" states="approved" string="Reject" type="object" context="{'approved':False}" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" />
+                        <!-- Internal Audit -->
+                        <button name="internal_confirmation" states="audit" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" groups="masterenergy_base_approval.group_internal_audit" />
+                        <button name="internal_confirmation" states="audit" string="Reject" type="object" groups="masterenergy_base_approval.group_internal_audit" context="{'approved':False}" />
+                        <!-- Plant Manager -->
+                        <button name="plant_manager_approve" states="approval" string="Approve" type="object" class="oe_highlight" context="{'approved':True}"/>
+                        <button name="plant_manager_approve" states="approval" string="Reject" type="object" groups="masterenergy_base_approval.group_internal_audit" context="{'approved':False}" />
+                        <!-- aa -->
                         <button name="accept_requisition" states="ready" string="Accept" type="object" class="oe_highlight" />
-                        <!-- groups="stock.group_stock_manager" -->
-                        <!--      <button name="confirmation" states="approval" string="Reject" type="object" context="{'approved':False}" groups="stock.group_stock_manager" /> -->
-                        <!--    <button name="do_transfer" states="transfer" string="Do Transfer" class="oe_highlight" type="object" groups="stock.group_stock_manager" /> -->
                         <field name="state" widget="statusbar" />
                     </header>
                     <sheet>
@@ -77,7 +80,7 @@
                                         <field name="transferred" readonly="1" />
                                         <field name="state" string="State" />
                                         <field name="button_show_state" invisible="1" />
-                                        <button name="procure" type="object" string="Procure" class="oe_link" attrs="{'invisible': [('to_procure', '=', True), ('button_show_state', '=', False)]}" groups="masterenergy_base_approval.group_store_officer" />
+                                        <button name="procure" type="object" string="Procure" class="oe_link" attrs="{'invisible': [('state', 'in', ['available', 'awaiting'])]}" groups="masterenergy_base_approval.group_store_officer" />
                                     </tree>
                                 </field>
                             </page>
