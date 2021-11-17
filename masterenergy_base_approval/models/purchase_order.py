@@ -27,6 +27,12 @@ class PurchaseOrder(models.Model):
         for rec in self:
             rec.write({"state": "gmd"})
 
+    # def gmd_button_approve(self, force=False):
+    #     self = self.filtered(lambda order: order._approval_allowed())
+    #     self.write({'state': 'purchase', 'date_approve': fields.Datetime.now()})
+    #     self.filtered(lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
+    #     return {}
+
     def button_approve(self, force=False):
         order = self.filtered(lambda order: order._approval_allowed())
         print(order, "!!!!!!!!!!!!!!!!!", order)
@@ -63,7 +69,8 @@ class PurchaseOrder(models.Model):
                 )
             )
             or self.user_has_groups("purchase.group_purchase_manager")
-            or self.user_has_groups("masterenergy_base_approval.group_ed")
+            or self.user_has_groups("masterenergy_base_approval.group_ed") 
+            or self.user_has_groups("masterenergy_base_approval.group_gmd")
         )
 
     def button_confirm(self):
