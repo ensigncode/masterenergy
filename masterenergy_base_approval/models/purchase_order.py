@@ -11,14 +11,25 @@ class PurchaseOrder(models.Model):
             ("audit", "Audit"),
             ("to approve", "Plant Manager"),
             ("group_audit", "Group Audit"),
+            ("ed", "Executive Director"),
+            ("gmd", "Group Managing Director"),
             ("purchase",),
         ],
         ondelete={"hod": "set default", "audit": "set default"},
         tracking=True,
     )
 
+    def button_group_audit(self):
+        for rec in self:
+            rec.write({"state": "ed"})
+
+    def button_ed_approve(self):
+        for rec in self:
+            rec.write({"state": "gmd"})
+
     def button_approve(self, force=False):
         order = self.filtered(lambda order: order._approval_allowed())
+        print(order, "!!!!!!!!!!!!!!!!!", order)
         if order:
             order.write({"state": "purchase", "date_approve": fields.Datetime.now()})
         else:
@@ -52,7 +63,25 @@ class PurchaseOrder(models.Model):
                 )
             )
             or self.user_has_groups("purchase.group_purchase_manager")
+            or self.user_has_groups("masterenergy_base_approval.group_ed")
         )
 
+    def button_confirm(self):
+        for order in self:
+            if order.state not in ["to approve", "gmd"]:
+                continue
+            order._add_supplier_to_product()
+            #     # Deal with double validation process
+            print("!!!!!!!!!!!!!!!!!!!", order.state)
+            if order.state == "gmd":
+                order.button_approve()
+                return True
 
-#
+            if order._approval_allowed():
+                # order.button_approve()
+                pass
+            else:
+                order.write({"state": "to approve"})
+            if order.partner_id not in order.message_partner_ids:
+                order.message_subscribe([order.partner_id.id])
+        return True

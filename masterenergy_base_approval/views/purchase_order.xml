@@ -10,16 +10,20 @@
                 <field name="state" widget="statusbar" statusbar_visible="draft,sent,to approve,hod,audit,purchase,group_audit" readonly="1" />
             </xpath>
             <xpath expr="//button[@id='draft_confirm']" position="replace">
-                <button name="button_confirm" type="object" states="group_audit" string="Confirm Order" id="draft_confirm" />
+                <button name="button_confirm" type="object" states="to approve,gmd" string="Confirm Order" id="draft_confirm" />
+                <!-- Group Audit -->
+                <button name="button_group_audit" type="object" states="group_audit" string="Approve" class="oe_highlight"/>
+                <button name="button_ed_approve" type="object" states="ed" string="Approve" class="oe_highlight"/>
+                <!-- <button name="button_approve" type="object" states="gmd" string="Approve" class="oe_highlight"/> -->
             </xpath>
             <xpath expr="//button[@id='bid_confirm']" position="replace">
-                <button name="button_confirm" type="object" states="to approve" string="Confirm Order" id="draft_confirm" invisible="1" />
+                <button name="button_confirm" type="object" states="to approve,gmd" string="Confirm Order" id="draft_confirm" invisible="1" />
             </xpath>
             <xpath expr="//button[@name='action_rfq_send']" position="before">
                 <button name="action_submit_to_hod" states="draft" string="Submit" type="object" context="{'send_rfq':True}" class="oe_highlight" />
             </xpath>
             <xpath expr="//button[@name='button_cancel']" position="replace">
-                <button name="button_cancel" states="draft,to approve,sent,hod,audit,purchase,group_audit" string="Cancel" type="object" />
+                <button name="button_cancel" states="draft,to approve,sent,hod,audit,purchase,group_audit,ed,gmd" string="Cancel" type="object" />
             </xpath>
             <xpath expr="//button[@name='button_cancel']" position="before">
                 <button name="action_hod_approve" class="oe_highlight" states="hod" string="Approve" type="object" />

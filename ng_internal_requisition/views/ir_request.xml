@@ -53,7 +53,7 @@
                             </group>
                             <group>
                                 <field name="end_user" attrs="{'readonly': [('state', '!=', 'draft')]}" />
-                                <field name="hod" />
+                                <field name="hod" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
                                 <field name="department" attrs="{'readonly': [('state', '!=', 'draft')]}" />
                             </group>
                             <group>
