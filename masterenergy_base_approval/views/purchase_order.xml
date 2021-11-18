@@ -10,7 +10,7 @@
                 <field name="state" widget="statusbar" statusbar_visible="draft,sent,to approve,hod,audit,purchase,group_audit" readonly="1" />
             </xpath>
             <xpath expr="//button[@id='draft_confirm']" position="replace">
-                <button name="button_confirm" type="object" states="to approve,gmd" string="Confirm Order" id="draft_confirm" />
+                <button name="button_confirm" type="object" states="gmd" string="Confirm Order" id="draft_confirm" />
                 <!-- Group Audit -->
                 <button name="button_group_audit" type="object" states="group_audit" string="Approve" class="oe_highlight"/>
                 <button name="button_ed_approve" type="object" states="ed" string="Approve" class="oe_highlight"/>

@@ -27,17 +27,18 @@ class PurchaseOrder(models.Model):
         for rec in self:
             rec.write({"state": "gmd"})
 
-    # def gmd_button_approve(self, force=False):
-    #     self = self.filtered(lambda order: order._approval_allowed())
-    #     self.write({'state': 'purchase', 'date_approve': fields.Datetime.now()})
-    #     self.filtered(lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
-    #     return {}
+    def gmd_button_approve(self, force=False):
+        self = self.filtered(lambda order: order._approval_allowed())
+        self.write({"state": "purchase", "date_approve": fields.Datetime.now()})
+        self.filtered(lambda p: p.company_id.po_lock == "lock").write({"state": "done"})
+        return {}
 
     def button_approve(self, force=False):
         order = self.filtered(lambda order: order._approval_allowed())
         print(order, "!!!!!!!!!!!!!!!!!", order)
         if order:
             order.write({"state": "purchase", "date_approve": fields.Datetime.now()})
+            order._create_picking()
         else:
             self.write({"state": "group_audit", "date_approve": fields.Datetime.now()})
 
@@ -68,27 +69,15 @@ class PurchaseOrder(models.Model):
                     self.date_order or fields.Date.today(),
                 )
             )
-            or self.user_has_groups("purchase.group_purchase_manager")
-            or self.user_has_groups("masterenergy_base_approval.group_ed") 
-            or self.user_has_groups("masterenergy_base_approval.group_gmd")
+            # or self.user_has_groups("purchase.group_purchase_manager")
+            # or self.user_has_groups("masterenergy_base_approval.group_ed")
+            # or self.user_has_groups("masterenergy_base_approval.group_gmd")
         )
 
     def button_confirm(self):
-        for order in self:
-            if order.state not in ["to approve", "gmd"]:
-                continue
-            order._add_supplier_to_product()
-            #     # Deal with double validation process
-            print("!!!!!!!!!!!!!!!!!!!", order.state)
-            if order.state == "gmd":
-                order.button_approve()
-                return True
-
-            if order._approval_allowed():
-                # order.button_approve()
-                pass
-            else:
-                order.write({"state": "to approve"})
-            if order.partner_id not in order.message_partner_ids:
-                order.message_subscribe([order.partner_id.id])
-        return True
+        # self = self.filtered(lambda order: order._approval_allowed())
+        # if self.user_has_groups("masterenergy_base_approval.group_gmd"):
+        self.write({"state": "purchase", "date_approve": fields.Datetime.now()})
+        self._create_picking()
+        self.filtered(lambda p: p.company_id.po_lock == "lock").write({"state": "done"})
+        return {}
