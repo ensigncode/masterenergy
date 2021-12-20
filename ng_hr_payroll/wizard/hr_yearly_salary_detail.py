@@ -33,4 +33,3 @@ class yearly_salary_detail(models.TransientModel):
         )
 
         return self.env["report"].get_action(self, "ng_hr_payroll.yearly_salary_ng_report", data=datas)
-

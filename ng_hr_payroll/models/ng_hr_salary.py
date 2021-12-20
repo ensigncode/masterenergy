@@ -241,7 +241,11 @@ class salary_increment(models.Model):
     #    case_id = fields.Many2one('crm.meeting', string='Meeting', help='Related Meeting for Increment', readonly=False, states={'validate':[('readonly', True)]})
     case_id = fields.Char("Meeting")
     department_id = fields.Many2one(
-        related="employee_id.department_id", string="Department", comodel_name="hr.department", readonly=True, store=True
+        related="employee_id.department_id",
+        string="Department",
+        comodel_name="hr.department",
+        readonly=True,
+        store=True,
     )
     category_id = fields.Many2one(
         "hr.employee.category",

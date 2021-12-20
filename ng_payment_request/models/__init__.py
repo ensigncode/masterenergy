@@ -17,5 +17,5 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 ##############################################################################
-from.import payment_requisition
-from.import company
+from . import payment_requisition
+from . import company

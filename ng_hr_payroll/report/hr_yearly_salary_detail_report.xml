@@ -1,4 +1,4 @@
-<?xml version="1.0"?><!--bug:report should be print each employee detail in new page-->
+<?xml version="1.0"?>
 <odoo>
 	<data>
 		<template id="yearly_salary_ng_report">
@@ -183,7 +183,6 @@
 							</t>
 						</div>
 					</t>
-<!--				</t>	-->
 			</t>	
 		</template>
 	</data>

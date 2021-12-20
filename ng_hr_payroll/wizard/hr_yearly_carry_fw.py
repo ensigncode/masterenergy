@@ -118,4 +118,3 @@ class yearly_carry_fw(models.Model):
         result = action_ref.read()[0]
         result["domain"] = "[('id','in', [" + ",".join(map(str, hlist)) + "])]"
         return result
-

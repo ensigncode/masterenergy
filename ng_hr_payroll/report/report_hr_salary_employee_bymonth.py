@@ -1,23 +1,3 @@
-# -*- coding:utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011 OpenERP SA (<http://openerp.com>). All Rights Reserved
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-#
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
 import datetime
 import time
 from odoo import api, fields, models
@@ -31,7 +11,6 @@ class report_hr_salary_employee_bymonth(models.AbstractModel):
     total = 0.0
 
     def get_periods(self, form):
-        #       Get start yea    r-month-date and end year-month-date
         first_year = int(form["start_date"][0:4])
         last_year = int(form["end_date"][0:4])
 
@@ -136,6 +115,3 @@ class report_hr_salary_employee_bymonth(models.AbstractModel):
             "company": self.env.user.company_id,
         }
         return self.env["report"].render("ng_hr_payroll.hr_salary_employee_bymonth_ng_report", values=docargs)
-
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
