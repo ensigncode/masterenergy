@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data> 
+        <report id="payment_request_reg"
+                name="ng_payment_request.payment_request_report_view"
+                file="ng_payment_request.payment_request_report_view" 
+                model="payment.requisition"
+                report_type='qweb-pdf'
+                string="Payment made by Account"/>
+    </data>
+</odoo>
