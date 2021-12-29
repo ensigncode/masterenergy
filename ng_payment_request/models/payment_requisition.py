@@ -9,8 +9,9 @@ class AccountMoveInherit(models.Model):
     customer_id = fields.Many2one(comodel_name="res.partner", string="Customer/Vendor")
 
 
-class payment_request_line(models.Model):
+class PaymentRequestLine(models.Model):
     _name = "payment.requisition.line"
+    _description = "payment.requisition.line"
 
     @api.depends("payment_request_id")
     def check_state(self):
@@ -32,7 +33,7 @@ class payment_request_line(models.Model):
             self.approved_amount = amount
 
 
-class payment_request(models.Model):
+class PaymentRequest(models.Model):
     _inherit = ["mail.thread"]
     _name = "payment.requisition"
     _description = "Payment Requisition"
@@ -83,7 +84,7 @@ class payment_request(models.Model):
             ("refused", "Refused"),
             ("cancelled", "Cancelled"),
         ],
-        track_visibility="onchange",
+        tracking=True,
         default="draft",
         string="State",
     )
@@ -111,13 +112,13 @@ class payment_request(models.Model):
         readonly=False,
         states={"draft": [("readonly", False)]},
     )
-    # partner_id = fields.Many2one('res.partner', string="Customer")
+
 
     @api.model
     def create(self, vals):
         if not vals.get("name"):
             vals["name"] = self.env["ir.sequence"].get("payment.requisition")
-        return super(payment_request, self).create(vals)
+        return super(PaymentRequest, self).create(vals)
 
     @api.onchange("requester_id")
     def onchange_requester(self):
@@ -139,7 +140,7 @@ class payment_request(models.Model):
         else:
             self.need_gm_approval = True
             body = _("Payment request %s has been approved. Please provide second approval." % (self.name))
-            self.notify(body=body, users=[], group="ng_payment_request.general_manager")
+            self.notify(body=body, users=[], group="ng_PaymentRequest.general_manager")
         self.state = "awaiting_approval"
         return True
 
@@ -147,13 +148,12 @@ class payment_request(models.Model):
         for line in self.request_line:
             if line.approved_amount <= 0.0:
                 raise exceptions.Warning(_("Approved amount cannot be less then or equal to Zero."))
-                # raise Warning(_('Approved amount cannot be less then or equal to Zero.'))
         if (
             self.amount_company_currency > self.company_id.min_amount
-        ):  # or self.amount_company_currency <= company.max_amount
+        ):  
             self.need_gm_approval = True
             body = _("Payment request %s has been approved. Please provide second approval." % (self.name))
-            self.notify(body=body, users=[], group="ng_payment_request.general_manager")
+            self.notify(body=body, users=[], group="ng_PaymentRequest.general_manager")
         else:
             self.state = "approved"
             body = _("Your request %s has been approved." % (self.name))
@@ -169,11 +169,10 @@ class payment_request(models.Model):
         for line in self.request_line:
             if line.approved_amount <= 0.0:
                 raise exceptions.Warning(_("Approved amount cannot be less then or equal to Zero."))
-                # raise Warning(_('Warning'),_('Approved amount cannot be less then or equal to Zero.'))
         if self.amount_company_currency > self.company_id.max_amount:
             self.need_md_approval = True
             body = _("Payment request %s has been approved. Please provide final approval." % (self.name))
-            self.notify(body=body, group="ng_payment_request.managing_director")
+            self.notify(body=body, group="ng_PaymentRequest.managing_director")
         else:
             self.state = "approved"
             body = _("Your request %s has been approved." % (self.name))
@@ -207,13 +206,11 @@ class payment_request(models.Model):
         self.state = "approved"
         self.director_approve_date = fields.Date.context_today(self)
         body = _("Your request %s has been approved." % (self.name))
-        # self.notify(body=body, users=[self.employee_id.user_id.partner_id.id])
         body = _("Payment request %s has been approved. Please proceed with the payment." % (self.name))
         self.notify(body=body, group="account.group_account_manager")
         return True
 
     def action_pay(self):
-        # period_obj = self.env['account.period']
         move_obj = self.env["account.move"]
         move_line_obj = self.env["account.move.line"]
         currency_obj = self.env["res.currency"]
@@ -221,7 +218,6 @@ class payment_request(models.Model):
 
         ctx = dict(self._context or {})
         for record in self:
-            # period_ids = period_obj.find(record.date)
             company_currency = record.company_id.currency_id
             current_currency = record.currency_id
 
@@ -238,8 +234,6 @@ class payment_request(models.Model):
             move_vals = {
                 "date": record.date,
                 "ref": reference,
-                # TODO: Find which period to use for this
-                # 'period_id': period_ids and period_ids.id or False,
                 "journal_id": record.journal_id.id,
             }
 
@@ -248,8 +242,6 @@ class payment_request(models.Model):
             partner_id = record.employee_id.address_home_id
             if not partner_id:
                 raise exceptions.Warning(_("Please specify Employee Home Address in the Employee Form!."))
-
-                # raise Warning(_('Warning'),_('Please specify the Home Address for employee.'))
             for line in record.request_line:
                 amount_line = current_currency.compute(line.approved_amount, company_currency)
                 move_line_obj.with_context(check_move_validity=False).create(
@@ -260,7 +252,6 @@ class payment_request(models.Model):
                         "account_id": line.expense_account_id.id,
                         "credit": 0.0,
                         "debit": amount_line,
-                        # 'period_id': period_ids and period_ids.id or False,
                         "journal_id": journal_id,
                         "partner_id": partner_id.id,
                         "customer_id": line.partner_id.id,
@@ -282,7 +273,6 @@ class payment_request(models.Model):
                     "account_id": record.journal_id.default_credit_account_id.id,
                     "debit": 0.0,
                     "credit": amount,
-                    # 'period_id': period_ids and period_ids.id or False,
                     "journal_id": journal_id,
                     "partner_id": partner_id.id,
                     "customer_id": line.partner_id.id,
@@ -300,7 +290,6 @@ class payment_request(models.Model):
                 account = record.journal_id.default_debit_account_id.id
                 if not record.journal_id.type == "cash":
                     raise exceptions.Warning(_("Journal should match with selected cash register journal."))
-                    # raise Warning(_('Error'), _('Journal should match with selected cash register journal.'))
                 stline_vals = {
                     "name": record.name or "?",
                     "amount": amount,
@@ -310,7 +299,7 @@ class payment_request(models.Model):
                     "ref": record.name,
                     "partner_id": partner_id.id,
                     "date": record.date,
-                    "payment_request_id": record.id,
+                    "PaymentRequest_id": record.id,
                 }
                 statement_line_obj.create(stline_vals)
         self.state = "paid"
@@ -332,4 +321,4 @@ class payment_request(models.Model):
 class account_bank_statement_line(models.Model):
     _inherit = "account.bank.statement.line"
 
-    payment_request_id = fields.Many2one("payment.requisition", string="Payment Request")
+    PaymentRequest_id = fields.Many2one("payment.requisition", string="Payment Request")
