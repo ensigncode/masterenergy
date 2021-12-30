@@ -9,13 +9,23 @@
                 <form string="Payment Requisition">
                     <header>
                         <button name="action_confirm" states="draft" string="Confirm" type="object" class="oe_highlight" />
-                        <button name="action_approve" string="Approve" groups="ng_payment_request.department_manager" type="object" class="oe_highlight" attrs="{'invisible': ['|',('need_gm_approval', '=', True), ('state', '!=', 'awaiting_approval')]}" />
-                        <button name="action_gm_approve" groups="ng_payment_request.general_manager" string="GM Approve" type="object" class="oe_highlight" attrs="{'invisible': ['|','|',('need_gm_approval', '=', False), ('need_md_approval', '=', True), ('state', '!=', 'awaiting_approval')]}" />
-                        <button name="action_md_approve" groups="ng_payment_request.managing_director" string="MD Approve" type="object" class="oe_highlight" attrs="{'invisible': ['|',('need_md_approval', '=', False), ('state', '!=', 'awaiting_approval')]}" />
-                        <button name="action_pay" states="approved" groups="account.group_account_manager" string="Pay" type="object" class="oe_highlight" />
-                        <button name="action_refuse" groups="ng_payment_request.department_manager,ng_payment_request.general_manager,ng_payment_request.managing_director,account.group_account_manager" string="Refuse" type="object" class="oe_highlight" states="awaiting_approval,approved" />
-                        <button name="action_reset" string="Reset to Draft" type="object" class="oe_highlight" states="awaiting_approval" />
-                        <button name="action_cancel" states="draft,awaiting_approval" string="Cancel" type="object" class="oe_highlight" />
+                        <button name="action_audit_approve" string="Approve" groups="masterenergy_base_approval.group_internal_audit" type="object" class="oe_highlight" states="audit" />
+                        <button name="action_plant_manager_approve" groups="masterenergy_base_approval.group_plant_manager" string="Approve" type="object" class="oe_highlight" states="plant_manager" />
+                        <button name="action_group_audit_approve" groups="masterenergy_base_approval.group_group_auditor" string="Approve" type="object" class="oe_highlight"  states="group_audit"/>
+
+                        <button name="action_ed_approve" groups="masterenergy_base_approval.group_ed" string="Approve" type="object" class="oe_highlight"  states="ed"/>
+
+                         <button name="action_gmd_approve" groups="masterenergy_base_approval.group_gmd" string="Approve" type="object" class="oe_highlight"  states="gmd"/>
+
+
+                        <button name="action_pay" states="finance" groups="account.group_account_manager" string="Make Payment" type="object" class="oe_highlight" />
+
+                        <button name="action_refuse" string="Refuse" type="object" class="oe_highlight"  states="group_audit,ed,gmd,finance"/>
+
+                        <button name="action_reset" string="Reset to Draft" type="object" class="oe_highlight" states="refused"/>
+                        <!-- <button name="action_cancel" string="Cancel" type="object" class="oe_highlight" /> -->
+
+
                         <field name="state" widget="statusbar" />
                     </header>
                     <sheet>
@@ -26,13 +36,14 @@
                             <group>
                                 <field name="requester_id" attrs="{'readonly': [('state', 'not in', ('draft', 'confirm'))]}" />
                                 <field name="employee_id" attrs="{'readonly': [('state', 'not in', ('draft', 'confirm'))]}" />
-                                <field name="department_id" attrs="{'readonly': [('state', 'not in', ('draft', 'confirm'))]}" />
+                          
                                 <field name="company_id" attrs="{'readonly': [('state', 'not in', ('draft', 'confirm'))]}" />
                             </group>
                             <group>
                                 <field name="date" attrs="{'readonly': [('state', 'not in', ('draft', 'confirm'))]}" />
                                 <field name="need_gm_approval" invisible="1" />
                                 <field name="need_md_approval" invisible="1" />
+                                <field name="department_id" attrs="{'readonly': [('state', 'not in', ('draft', 'confirm'))]}" />
                                 <field name="update_cash" groups="account.group_account_user" attrs="{'readonly': [('state', 'in', ('draft', 'confirm'))]}" />
                                 <field context="{'transfer': True}" groups="account.group_account_user" name="cash_id" attrs="{'invisible':[('update_cash','=',False)], 'required':[('update_cash','=',True)]}" />
                             </group>
@@ -41,13 +52,13 @@
                             <page string="Payment Request Lines">
                                 <field name="request_line" attrs="{'readonly': [('state', 'in', ('paid', 'cancelled'))]}">
                                     <tree string="Request Lines" editable="bottom">
-                                        <field name="dummy_state" invisible="1" />
+                                        <field name="state" invisible="1" />
                                         <field name="name" />
                                         <field name="request_amount" sum="Total Requsted Amount" />
                                         <field name="partner_id" />
-                                        <field name="approved_amount" sum="Total Approved Amount" groups="account.group_account_user,ng_payment_request.department_manager,ng_payment_request.general_manager,ng_payment_request.managing_director" attrs="{'required': [('dummy_state', '=','awaiting_approval')]}" />
-                                        <field name="expense_account_id" domain="[('internal_type', '=', 'other')]" attrs="{'readonly': [('dummy_state', '!=', 'approved')],'required': [('dummy_state', '=', 'approved')]}" />
-                                        <field groups="analytic.group_analytic_accounting" name="analytic_account_id" attrs="{'readonly': [('dummy_state', '!=', 'approved')],'required': [('dummy_state', '=', 'approved')]}" />
+                                        <field name="approved_amount" sum="Total Approved Amount" />
+                                        <field name="expense_account_id" domain="[('internal_type', '=', 'other')]" attrs="{'readonly': [('state', '!=', 'finance')],'required': [('state', '=', 'finance')]}" />
+                                        <field groups="analytic.group_analytic_accounting" name="analytic_account_id" attrs="{'readonly': [('state', '!=', 'finance')],'required': [('state', '=', 'finance')]}" />
                                     </tree>
                                 </field>
                                 <group class="oe_subtotal_footer oe_right" name="requested_amount">
@@ -61,7 +72,7 @@
                             </page>
                             <page string="Accounting" groups="account.group_account_user">
                                 <group>
-                                    <field name="journal_id" domain="[('type','in',['cash','bank']),('company_id','=',company_id)]" attrs="{'readonly': [('state', 'not in', ('approved'))],'required': [('state', 'in', ('approved'))]}" />
+                                    <field name="journal_id" domain="[('type','in',['cash','bank']),('company_id','=',company_id)]" attrs="{'readonly': [('state', 'not in', ('finance'))],'required': [('state', 'in', ('finance'))]}" />
                                     <field name="move_id" readonly="True" groups="account.group_account_user" />
                                 </group>
                             </page>
@@ -75,7 +86,7 @@
                                         <field name="currency_id" attrs="{'readonly': [('state', 'not in', ('draft', 'confirm'))]}" />
                                     </group>
                                 </group>
-                                <group string="Approved By">
+                        <!--         <group string="finance By">
                                     <group>
                                         <field name="dept_manager_id" />
                                         <field name="general_manager_id" attrs="{'invisible': [('need_gm_approval', '=', False)]}" />
@@ -86,7 +97,7 @@
                                         <field name="gm_approve_date" attrs="{'invisible': [('need_gm_approval', '=', False)]}" />
                                         <field name="director_approve_date" attrs="{'invisible': [('need_md_approval', '=', False)]}" />
                                     </group>
-                                </group>
+                                </group> -->
                             </page>
                         </notebook>
                     </sheet>
@@ -122,7 +133,7 @@
                     <field name="state" />
                     <filter string="Draft" name="draft" domain="[('state','=', 'draft')]" />
                     <filter string="Awaiting Approval" name="awaiting_approval" domain="[('state','=', 'awaiting_approval')]" />
-                    <filter string="Approved" name="approved" domain="[('state','=', 'approved')]" />
+                    <filter string="finance" name="finance" domain="[('state','=', 'finance')]" />
                     <filter string="Paid" name="paid" domain="[('state','=', 'paid')]" />
                     <filter string="Refused" name="paid" domain="[('state','=', 'refused')]" />
                     <filter string="Cancelled" name="cancelled" domain="[('state','=', 'cancelled')]" />

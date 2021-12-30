@@ -15,7 +15,7 @@ class PaymentRequestLine(models.Model):
 
     @api.depends("payment_request_id")
     def check_state(self):
-        self.dummy_state = self.payment_request_id.state
+        self.state = self.payment_request_id.state
 
     name = fields.Char("Description", required=True)
     request_amount = fields.Float("Requested Amount", required=True)
@@ -23,7 +23,7 @@ class PaymentRequestLine(models.Model):
     payment_request_id = fields.Many2one("payment.requisition", string="Payment Request")
     expense_account_id = fields.Many2one("account.account", "Account")
     analytic_account_id = fields.Many2one("account.analytic.account", string="Analytic Account")
-    dummy_state = fields.Char(compute="check_state", string="State")
+    state = fields.Char(compute="check_state", string="State")
     partner_id = fields.Many2one("res.partner", string="Customer/Vendor")
 
     @api.onchange("request_amount")
@@ -56,8 +56,8 @@ class PaymentRequest(models.Model):
     requester_id = fields.Many2one("res.users", "Requester", required=True, default=lambda self: self.env.user)
     employee_id = fields.Many2one("hr.employee", "Employee", required=True)
     department_id = fields.Many2one("hr.department", "Department")
-    date = fields.Date("Request Date", default=fields.Date.context_today)
-    description = fields.Text("Description")
+    date = fields.Date(string="Date", default=fields.Date.context_today)
+    description = fields.Text(string="Description")
     bank_id = fields.Many2one("res.bank", "Bank")
     bank_account = fields.Char("Bank Account", copy=False)
     request_line = fields.One2many("payment.requisition.line", "payment_request_id", string="Lines", copy=False)
@@ -78,16 +78,21 @@ class PaymentRequest(models.Model):
     state = fields.Selection(
         [
             ("draft", "Draft"),
-            ("awaiting_approval", "Awaiting Approval"),
-            ("approved", "Approved"),
+            ("audit", "Await Audit"),
+            ("plant_manager", "Await Plant Manager"),
+            ("group_audit", "Await Group Audit"),
+            ("ed", "Await Executive Director"),
+            ("gmd", "Await GMD"),
+            ("finance", "Await Finance"),
             ("paid", "Paid"),
             ("refused", "Refused"),
-            ("cancelled", "Cancelled"),
+            # ("cancelled", "Cancelled"),
         ],
         tracking=True,
         default="draft",
         string="State",
     )
+
     need_gm_approval = fields.Boolean("Needs First Approval?", copy=False, readonly=True)
     need_md_approval = fields.Boolean("Needs Final Approval?", copy=False, readonly=True)
     general_manager_id = fields.Many2one("hr.employee", "General Manager", readonly=True)
@@ -96,8 +101,8 @@ class PaymentRequest(models.Model):
     dept_manager_approve_date = fields.Date("Approved By Department Manager On", readonly=True)
     gm_approve_date = fields.Date("First Approved On", readonly=True)
     director_approve_date = fields.Date("Final Approved On", readonly=True)
-    move_id = fields.Many2one("account.move", "Journal Entry")
-    journal_id = fields.Many2one("account.journal", "Journal")
+    move_id = fields.Many2one("account.move", string="Journal Entry")
+    journal_id = fields.Many2one("account.journal", string="Journal")
     update_cash = fields.Boolean(
         string="Update Cash Register?",
         readonly=False,
@@ -113,7 +118,6 @@ class PaymentRequest(models.Model):
         states={"draft": [("readonly", False)]},
     )
 
-
     @api.model
     def create(self, vals):
         if not vals.get("name"):
@@ -128,86 +132,77 @@ class PaymentRequest(models.Model):
 
     def action_confirm(self):
         if not self.request_line:
-            # raise Warning(_('Warning'),_('Can not confirm request without request lines.'))
             raise exceptions.Warning(_("Can not confirm request without request lines."))
+        body = _(
+            "<p>Payment Requisition request %s has been confirmed by <b>%s</b>.</p> <p>Please check and approve.</p>"
+            % (self.name, self.env.user.partner_id.name)
+        )
+        subject = _("Payment Requisition %s" % (self.name,))
+        self.notify(body, subject, group="masterenergy_base_approval.group_internal_audit")
+        return self.write({"state": "audit"})
 
-        if not self.department_id.manager_id:
-            raise exceptions.Warning(_("Please contact HR to setup a manager for your department."))
-            # raise Warning(_('Warning'),_('Please contact HR to setup a manager for your department.'))
-        if self.amount_company_currency <= self.company_id.min_amount:
-            body = _("Payment request %s has been confirmed. Please check and approve." % (self.name))
-            self.notify(body=body, users=[self.department_id.manager_id.user_id.partner_id.id], group=False)
+    def action_audit_approve(self):
+        body = _(
+            "<p>Payment Requisition request %s has been confirmed by <b>%s</b>.</p> <p>Please check and approve.</p>"
+            % (self.name, self.env.user.partner_id.name)
+        )
+        subject = _("Payment Requisition %s" % (self.name,))
+        self.notify(body, subject, group="masterenergy_base_approval.group_plant_manager")
+        return self.write({"state": "plant_manager"})
+
+    def action_plant_manager_approve(self):
+        body = _(
+            "<p>Payment Requisition request %s has been confirmed by <b>%s</b>.</p> <p>Please check and approve.</p>"
+            % (self.name, self.env.user.partner_id.name)
+        )
+        subject = _("Payment Requisition %s" % (self.name,))
+        if self.approved_amount > self.company_id.plant_manager_limit:
+            self.notify(body, subject, group="masterenergy_base_approval.group_group_auditor")
+            return self.write({"state": "group_audit"})
         else:
-            self.need_gm_approval = True
-            body = _("Payment request %s has been approved. Please provide second approval." % (self.name))
-            self.notify(body=body, users=[], group="ng_PaymentRequest.general_manager")
-        self.state = "awaiting_approval"
-        return True
+            self.notify(body, subject, group="masterenergy_base_approval.group_group_auditor")
+            # Todo fix state
+            return self.write({"state": "group_audit"})
 
-    def action_approve(self):
-        for line in self.request_line:
-            if line.approved_amount <= 0.0:
-                raise exceptions.Warning(_("Approved amount cannot be less then or equal to Zero."))
-        if (
-            self.amount_company_currency > self.company_id.min_amount
-        ):  
-            self.need_gm_approval = True
-            body = _("Payment request %s has been approved. Please provide second approval." % (self.name))
-            self.notify(body=body, users=[], group="ng_PaymentRequest.general_manager")
-        else:
-            self.state = "approved"
-            body = _("Your request %s has been approved." % (self.name))
-            self.notify(body=body, users=[self.employee_id.user_id.partner_id.id])
-            body = _("Payment request %s has been approved. Please proceed with the payment." % (self.name))
-            self.notify(body=body, group="account.group_account_manager")
-        emp = self.env["hr.employee"].search([("user_id", "=", self._uid)], limit=1)
-        self.dept_manager_id = emp.id
-        self.dept_manager_approve_date = fields.Date.context_today(self)
-        return True
+    def action_group_audit_approve(self):
+        body = _(
+            "<p>Payment Requisition request %s has been confirmed by <b>%s</b>.</p> <p>Please check and approve.</p>"
+            % (self.name, self.env.user.partner_id.name)
+        )
+        subject = _("Payment Requisition %s" % (self.name,))
+        self.notify(body, subject, group="masterenergy_base_approval.group_ed")
+        return self.write({"state": "ed"})
 
-    def action_gm_approve(self):
-        for line in self.request_line:
-            if line.approved_amount <= 0.0:
-                raise exceptions.Warning(_("Approved amount cannot be less then or equal to Zero."))
-        if self.amount_company_currency > self.company_id.max_amount:
-            self.need_md_approval = True
-            body = _("Payment request %s has been approved. Please provide final approval." % (self.name))
-            self.notify(body=body, group="ng_PaymentRequest.managing_director")
-        else:
-            self.state = "approved"
-            body = _("Your request %s has been approved." % (self.name))
-            self.notify(body=body, users=[self.employee_id.user_id.partner_id.id])
-            body = _("Payment request %s has been approved. Please proceed with the payment." % (self.name))
-            self.notify(body=body, group="account.group_account_manager")
+    def action_ed_approve(self):
+        body = _(
+            "<p>Payment Requisition request %s has been confirmed by <b>%s</b>.</p> <p>Please check and approve.</p>"
+            % (self.name, self.env.user.partner_id.name)
+        )
+        subject = _("Payment Requisition %s" % (self.name,))
+        self.notify(body, subject, group="masterenergy_base_approval.group_gmd")
+        return self.write({"state": "gmd"})
 
-        emp = self.env["hr.employee"].search([("user_id", "=", self._uid)], limit=1)
-        self.general_manager_id = emp.id
-        self.gm_approve_date = fields.Date.context_today(self)
-        return True
+    def action_gmd_approve(self):
+        body = _(
+            "<p>Payment Requisition request %s has been confirmed by <b>%s</b>.</p> <p>Please check and approve.</p>"
+            % (self.name, self.env.user.partner_id.name)
+        )
+        subject = _("Payment Requisition %s" % (self.name,))
+        self.notify(body, subject, group="account.group_account_manager")
+        return self.write({"state": "finance"})
 
-    def notify(self, body="", users=[], group=False):
-        post_msg = []
+    def notify(self, body, subject, users=None, group=None):
+        partner_ids = []
         if group:
-            users = self.env["res.users"].search(
-                [("active", "=", True), ("company_id", "=", self.env.user.company_id.id)]
-            )
+            users = self.env.ref(group).users
             for user in users:
-                if user.has_group(group) and user.id != 1:
-                    post_msg.append(user.partner_id.id)
-        else:
-            post_msg = users
-        if len(post_msg):
-            self.message_post(body=body, partner_ids=post_msg)
-        return True
-
-    def action_md_approve(self):
-        emp = self.env["hr.employee"].search([("user_id", "=", self._uid)], limit=1)
-        self.manging_director_id = emp.id
-        self.state = "approved"
-        self.director_approve_date = fields.Date.context_today(self)
-        body = _("Your request %s has been approved." % (self.name))
-        body = _("Payment request %s has been approved. Please proceed with the payment." % (self.name))
-        self.notify(body=body, group="account.group_account_manager")
+                partner_ids.append(user.partner_id.id)
+        elif users:
+            users = self.env["res.users"].browse(users)
+            for user in users:
+                partner_ids.append(user.partner_id.id)
+        if partner_ids:
+            self.message_post(body=body, subject=subject, partner_ids=partner_ids)
         return True
 
     def action_pay(self):
@@ -270,7 +265,7 @@ class PaymentRequest(models.Model):
                     "name": asset_name,
                     "ref": reference,
                     "move_id": move_id.id,
-                    "account_id": record.journal_id.default_credit_account_id.id,
+                    "account_id": record.journal_id.default_account_id.id,
                     "debit": 0.0,
                     "credit": amount,
                     "journal_id": journal_id,

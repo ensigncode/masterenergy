@@ -6,3 +6,4 @@ class ResCompany(models.Model):
 
     min_amount = fields.Float(string="Minimum Amount")
     max_amount = fields.Float(string="Maximum Amount")
+    plant_manager_limit = fields.Float(string="Plant Manager Payment Request Limit")

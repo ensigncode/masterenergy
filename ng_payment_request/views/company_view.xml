@@ -9,13 +9,14 @@
                 <xpath expr="//page[1]" position="after">
                     <page string="Payment Request">
                         <group>
-                            <field name="min_amount" />
-                            <field name="max_amount" />
+                            <!-- <field name="min_amount" /> -->
+                            <!-- <field name="max_amount" /> -->
+                            <field name="plant_manager_limit"/>
                         </group>
-                        <p class="oe_grey">
+            <!--             <p class="oe_grey">
                             If the requested amount &gt; Minimum Amount and &lt; Maximum amount it needs only General Managers Approval <br />
                             If the requested amount &gt; Maximum Amount then it needs the Approval of both General Managers and Managing Director
-                        </p>
+                        </p> -->
                     </page>
                 </xpath>
             </field>
