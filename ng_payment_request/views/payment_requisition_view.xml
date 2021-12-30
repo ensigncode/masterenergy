@@ -152,7 +152,7 @@
         <menuitem id="payment_requisition_main" name="Payment Requisition" groups="base.group_user" />
         <menuitem id="payment_requisition_main_menu" name="Payment Requisition" groups="base.group_user" sequence="59" parent="payment_requisition_main" />
         <menuitem id="payment_requisition_main_menu_1" name="Payment Requisition" parent="payment_requisition_main_menu" groups="base.group_user" sequence="0" action="payment_requisition_action" />
-        <menuitem id="payment_request_main_menu" groups="account.group_account_user" name="Payment Requisition" parent="account.menu_finance" />
+        <menuitem id="payment_request_main_menu" groups="account.group_account_user" name="Payment Requisition" parent="account.account_invoicing_menu" />
         <menuitem id="payment_request_menu" name="Payment Requisition" parent="payment_request_main_menu" action="payment_requisition_action" />
     </data>
 </odoo>

@@ -31,13 +31,13 @@
                         <button name="store_officer_approve" states="approved" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" />
                         <button name="check_quantity_available" states="approved" string="Confirm Available Quantity" type="object" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" class="oe_link" />
                         <button name="store_officer_approve" states="approved" string="Reject" type="object" context="{'approved':False}" groups="ng_internal_requisition.ng_internal_requisition_stock_officer" />
-                        <!-- Internal Audit -->
+               
                         <button name="internal_confirmation" states="audit" string="Approve" type="object" context="{'approved':True}" class="oe_highlight" groups="masterenergy_base_approval.group_internal_audit" />
                         <button name="internal_confirmation" states="audit" string="Reject" type="object" groups="masterenergy_base_approval.group_internal_audit" context="{'approved':False}" />
-                        <!-- Plant Manager -->
+                  
                         <button name="plant_manager_approve" states="approval" string="Approve" type="object" class="oe_highlight" context="{'approved':True}"/>
                         <button name="plant_manager_approve" states="approval" string="Reject" type="object" groups="masterenergy_base_approval.group_internal_audit" context="{'approved':False}" />
-                        <!-- aa -->
+                        
                         <button name="accept_requisition" states="ready" string="Accept" type="object" class="oe_highlight" />
                         <field name="state" widget="statusbar" />
                     </header>

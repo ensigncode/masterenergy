@@ -33,12 +33,6 @@
             <field name="context">{'search_default_employee':1,'search_default_category':1,'group_by_no_leaf':uid,'group_by':[]}</field>
             <field name="help">This report performs analysis on Payslip</field>
         </record>
-        <menuitem 
-            sequence="5" 
-            id="menu_reporting_payslip" 
-            groups="hr.group_hr_manager" 
-            action="action_payslip_report_all" 
-            parent="hr.menu_hr_reporting_timesheet" 
-        />
+        <menuitem action="action_payslip_report_all" id="menu_reporting_payslip" parent="hr.menu_hr_reporting_timesheet" sequence="5" groups="hr.group_hr_manager" />
     </data>
 </odoo>
