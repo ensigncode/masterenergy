@@ -1,7 +1,7 @@
 from odoo import models, fields, api, _
 
 
-# class payslip_lines_contribution_register(models.TransientModel):
+# class PayslipLinesContributionRegister(models.TransientModel):
 #     _inherit = "payslip.lines.contribution.register"
 #     _description = "PaySlip Lines by Contribution Registers"
 

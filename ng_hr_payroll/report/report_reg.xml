@@ -1,55 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <odoo>
-	<data>
-		<report id="payroll_advise_report_reg"
-				string="Print Advice Report" 
-				model="hr.payroll.advice"
-				report_type="qweb-pdf"
-				file = "ng_hr_payroll.ng_payroll_advise_report"
-				name ="ng_hr_payroll.ng_payroll_advise_report"/>
-		
-        <report
-            id="hr_salary_employee_bymonth_ng_reg" 
-            model="hr.salary.employee.month"
-            report_type="qweb-pdf" 
-            file = "ng_hr_payroll.hr_salary_employee_bymonth_ng_report" 
-            name="ng_hr_payroll.hr_salary_employee_bymonth_ng_report" 
-            string="Yearly Salary by Category" /> 
-
-        <report
-            id="yearly_salary_ng_reg" 
-            model="yearly.salary.detail"
-            report_type="qweb-pdf"
-            file = "ng_hr_payroll.yearly_salary_ng_report"  
-            name="ng_hr_payroll.yearly_salary_ng_report" 
-            string="Yearly Salary by Employee" /> 
-
-         <report
-            menu="False"
-            id="contribution_register_emp_reg"
-            report_type="qweb-pdf"
-            model="hr.contribution.register"
-            file = "ng_hr_payroll.contribution_register_emp_report"
-            name="ng_hr_payroll.contribution_register_emp_report"
-            string="Conribution Register By Employee"/>
-         
-        <report
-            menu="False"
-            id="hr_payroll.contribution_register_reg"
-            model="hr.contribution.register"
-            report_type="qweb-pdf"
-            file = "ng_hr_payroll.contribution_register_mod_report"
-            name="ng_hr_payroll.contribution_register_mod_report"
-            string="PaySlip Lines By Contribution Register" />
-        
-        <report
-            id="payroll_register_reg" 
-            model="payroll.register"
-            report_type="qweb-pdf" 
-            name="ng_hr_payroll.payroll_register_report"
-            file="ng_hr_payroll.payroll_register_report" 
-            string="Payroll Register" />
-
-	</data>
+    <data>
+        <record id="payroll_advise_report_reg" model="ir.actions.report">
+            <field name="name">Print Advice Report</field>
+            <field name="model">hr.payroll.advice</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ng_hr_payroll.ng_payroll_advise_report</field>
+            <field name="report_file">ng_hr_payroll.ng_payroll_advise_report</field>
+            <!-- <field name="binding_model_id" ref="ng_hr_payroll.model_payroll_advice" /> -->
+            <field name="binding_type">report</field>
+        </record>
+        <record id="hr_salary_employee_bymonth_ng_reg" model="ir.actions.report">
+            <field name="name">Yearly Salary by Category</field>
+            <field name="model">hr.salary.employee.month</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ng_hr_payroll.hr_salary_employee_bymonth_ng_report</field>
+            <field name="report_file">ng_hr_payroll.hr_salary_employee_bymonth_ng_report</field>
+            <!-- <field name="binding_model_id" ref="ng_hr_payroll.model_salary_employee_month" /> -->
+            <field name="binding_type">report</field>
+        </record>
+        <record id="yearly_salary_ng_reg" model="ir.actions.report">
+            <field name="name">Yearly Salary by Employee</field>
+            <field name="model">hr.salary.employee.month</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ng_hr_payroll.yearly_salary_ng_report</field>
+            <field name="report_file">ng_hr_payroll.yearly_salary_ng_report</field>
+            <!-- <field name="binding_model_id" ref="ng_hr_payroll.model_yearly_salary_detail" /> -->
+            <field name="binding_type">report</field>
+        </record>
+        <record id="contribution_register_emp_reg" model="ir.actions.report">
+            <field name="name">Conribution Register By Employee</field>
+            <field name="model">hr.salary.employee.month</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ng_hr_payroll.contribution_register_emp_report</field>
+            <field name="report_file">ng_hr_payroll.contribution_register_emp_report</field>
+            <!-- <field name="binding_model_id" ref="ng_hr_payroll.model_hr_contribution_register" /> -->
+            <field name="binding_type">report</field>
+        </record>
+        <record id="contribution_register_reg" model="ir.actions.report">
+            <field name="name">PaySlip Lines By Contribution Register</field>
+            <field name="model">hr.contribution.register</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ng_hr_payroll.contribution_register_mod_report</field>
+            <field name="report_file">ng_hr_payroll.contribution_register_mod_report</field>
+            <!-- <field name="binding_model_id" ref="ng_hr_payroll.model_hr_contribution_register" /> -->
+            <field name="binding_type">report</field>
+        </record>
+        <record id="payroll_register_reg" model="ir.actions.report">
+            <field name="name">Payroll Register</field>
+            <field name="model">payroll.register</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ng_hr_payroll.payroll_register_report</field>
+            <field name="report_file">ng_hr_payroll.payroll_register_report</field>
+            <!-- <field name="binding_model_id" ref="ng_hr_payroll.model_hr_contribution_register" /> -->
+            <field name="binding_type">report</field>
+        </record>
+    </data>
 </odoo>
