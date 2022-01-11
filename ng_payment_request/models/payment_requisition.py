@@ -40,17 +40,22 @@ class PaymentRequest(models.Model):
 
     @api.depends("request_line", "request_line.request_amount", "request_line.approved_amount")
     def _compute_requested_amount(self):
+        requested_amount = 0
+        approved_amount = 0
         for record in self:
             for line in record.request_line:
-                record.requested_amount += line.request_amount
-                record.approved_amount += line.approved_amount
+                requested_amount += line.request_amount
+                approved_amount += line.approved_amount
 
-            record.amount_company_currency = record.requested_amount
+            record.amount_company_currency = requested_amount
             company_currency = record.company_id.currency_id
             current_currency = record.currency_id
             if company_currency != current_currency:
-                amount = company_currency.compute(record.requested_amount, current_currency)
+                amount = company_currency.compute(requested_amount, current_currency)
+                approved_amount = company_currency.compute(approved_amount, current_currency)
                 record.amount_company_currency = amount
+                record.approved_amount = approved_amount
+                record.requested_amount = requested_amount
 
     name = fields.Char("Name", default="/", copy=False)
     requester_id = fields.Many2one("res.users", "Requester", required=True, default=lambda self: self.env.user)
