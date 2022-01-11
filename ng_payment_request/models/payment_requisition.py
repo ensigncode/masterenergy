@@ -86,7 +86,7 @@ class PaymentRequest(models.Model):
             ("finance", "Await Finance"),
             ("paid", "Paid"),
             ("refused", "Refused"),
-            # ("cancelled", "Cancelled"),
+            ("cancelled", "Cancelled"),
         ],
         tracking=True,
         default="draft",

@@ -20,10 +20,10 @@
 
                         <button name="action_pay" states="finance" groups="account.group_account_manager" string="Make Payment" type="object" class="oe_highlight" />
 
-                        <button name="action_refuse" string="Refuse" type="object" class="oe_highlight"  states="group_audit,ed,gmd,finance"/>
+                        <button name="action_refuse" string="Refuse" type="object" class="oe_highlight"  states="group_audit,audit,ed,gmd,finance"/>
 
                         <button name="action_reset" string="Reset to Draft" type="object" class="oe_highlight" states="refused"/>
-                        <!-- <button name="action_cancel" string="Cancel" type="object" class="oe_highlight" /> -->
+                        <button name="action_cancel" string="Cancel" type="object" class="oe_highlight" states="group_audit,audit,ed,gmd,finance"/>
 
 
                         <field name="state" widget="statusbar" />
