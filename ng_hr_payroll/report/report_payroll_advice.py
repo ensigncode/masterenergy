@@ -5,10 +5,9 @@ from odoo import api, fields, models
 
 total_bysal = 0
 
+
 class report_payroll_advice(models.AbstractModel):
     _name = "report.ng_hr_payroll.ng_payroll_advise_report"
-
-
 
     def get_month(self, input_date):
         payslip_pool = self.env["hr.payslip"]
@@ -23,7 +22,6 @@ class report_payroll_advice(models.AbstractModel):
             )
             res["to_name"] = to_date.strftime("%d") + "-" + to_date.strftime("%B") + "-" + to_date.strftime("%Y")
         return res
-
 
     def get_bysal_total(self):
         return total_bysal
@@ -79,5 +77,3 @@ class report_payroll_advice(models.AbstractModel):
             "docs": docs,
             "company": self.env.user.company_id,
         }
-
-
