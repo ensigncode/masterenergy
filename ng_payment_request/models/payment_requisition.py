@@ -38,16 +38,20 @@ class PaymentRequest(models.Model):
     _name = "payment.requisition"
     _description = "Payment Requisition"
 
-    @api.depends("request_line", "request_line.request_amount", "request_line.approved_amount")
+    @api.depends("request_line", "request_line.request_amount", "request_line.approved_amount", "state")
     def _compute_requested_amount(self):
-        requested_amount = 0
-        approved_amount = 0
         for record in self:
+            requested_amount = 0
+            approved_amount = 0
             for line in record.request_line:
                 requested_amount += line.request_amount
                 approved_amount += line.approved_amount
+                # 
+                record.amount_company_currency = approved_amount
+                record.approved_amount = approved_amount
+                record.requested_amount = requested_amount
 
-            record.amount_company_currency = requested_amount
+            # record.amount_company_currency = requested_amount
             company_currency = record.company_id.currency_id
             current_currency = record.currency_id
             if company_currency != current_currency:
