@@ -46,7 +46,7 @@ class PaymentRequest(models.Model):
             for line in record.request_line:
                 requested_amount += line.request_amount
                 approved_amount += line.approved_amount
-                # 
+                #
                 record.amount_company_currency = approved_amount
                 record.approved_amount = approved_amount
                 record.requested_amount = requested_amount

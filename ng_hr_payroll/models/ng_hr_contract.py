@@ -32,6 +32,8 @@ class hr_contract(models.Model):
         default=75.0,
     )
 
+    # contract_type =  fields.Char()
+
     def onchange_employee_id(self):
         """Pick the corresponding job_id for selected employee"""
         if self.employee_id:

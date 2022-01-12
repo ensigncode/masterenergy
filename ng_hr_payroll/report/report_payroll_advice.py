@@ -29,6 +29,7 @@ class report_payroll_advice(models.AbstractModel):
     def get_detail(self, line_ids):
         result = []
         global total_bysal
+
         total_bysal = 0.00
         count = 0
         for l in line_ids:
@@ -55,6 +56,7 @@ class report_payroll_advice(models.AbstractModel):
         docargs = {
             "time": time,
             "get_month": self.get_month,
+            # 'convert': self.convert,
             "get_detail": self.get_detail,
             "get_bysal_total": self.get_bysal_total,
             "doc_ids": docids,

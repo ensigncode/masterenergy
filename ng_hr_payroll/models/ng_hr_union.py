@@ -315,6 +315,3 @@ class hr_employee(models.Model):
         "union.policy", "union_employee_rel", "employee_id", "union_id", string="Union Policies"
     )
     union_ids = fields.Many2many("emp.union", "union_employee_master_rel1", "employee_id", "u_id", string="Unions")
-
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

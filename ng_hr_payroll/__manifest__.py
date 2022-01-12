@@ -4,7 +4,17 @@
     "" "init_xml": [],
     "author": "Mattobell",
     "website": "http://www.mattobell.com",
-    "depends": ["hr", "hr_payroll", "crm", "hr_holidays", "hr_payroll_account", "base", "web", "mail"],
+    "depends": [
+        "hr",
+        "hr_payroll",
+        "crm",
+        "hr_holidays",
+        "hr_payroll_account",
+        "base",
+        "web",
+        "mail",
+        "hr_contract_salary",
+    ],
     "version": "1.0.1",
     "description": """
     Nigeria Payroll Salary Rules

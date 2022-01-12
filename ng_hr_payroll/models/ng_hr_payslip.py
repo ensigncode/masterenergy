@@ -36,15 +36,7 @@ class hr_payslip_run(models.Model):
         states={"draft": [("readonly", False)]},
         help="Keep Empty if you want to use structure define on contract of employee.",
     )
-
-    state = fields.Selection(
-        [("draft", "Draft"), ("close", "Close"),],
-        string="Status",
-        index=True,
-        readonly=True,
-        copy=False,
-        default="draft",
-    )
+    journal_id = fields.Many2one("account.journal", related="struct_id.journal_id")
 
     def copy(self, default={}):
         if not default:
@@ -543,8 +535,6 @@ class hr_payslip(models.Model):
             if pline["code"] == "GROSS":  # probuse
                 gross = pline["amount"]  # probuse
         return result
-        # New -End--------------------------
-        # we keep a dict with the result because a value can be overwritten by another rule with the same code
         result_dict = {}
         rules = {}
         categories_dict = {}
@@ -553,12 +543,6 @@ class hr_payslip(models.Model):
         inputs_obj = self.env["hr.payslip.worked_days"]
         obj_rule = self.env["hr.salary.rule"]
         payslip = payslip_obj.browse(payslip_id)
-
-        # return if normal salary
-        #        if not payslip.mid_month and payslip.old_percentage > 0.0:
-        #            pass
-        #        elif not payslip.mid_month and not payslip.old_percentage > 0.0:
-        #            return super(hr_payslip, self).get_payslip_lines(cr, uid, contract_ids, payslip_id, context)
 
         worked_days = {}
         for worked_days_line in payslip.worked_days_line_ids:
@@ -647,57 +631,57 @@ class hr_payslip(models.Model):
         return super(hr_payslip, self).copy(default)
 
 
-class hr_payslip_employees(models.TransientModel):
-    _inherit = "hr.payslip.employees"
+# class hr_payslip_employees(models.TransientModel):
+#     _inherit = "hr.payslip.employees"
 
-    def compute_sheet(self):
-        payslips = self.env["hr.payslip"]
-        [data] = self.read()
-        active_id = self.env.context.get("active_id")
-        if active_id:
-            [run_data] = (
-                self.env["hr.payslip.run"]
-                .browse(active_id)
-                .read(
-                    [
-                        "date_start",
-                        "date_end",
-                        "credit_note",
-                        "pay_type",
-                        "old_percentage",
-                        "mid_percentage",
-                        "journal_id",
-                        "struct_id",
-                    ]
-                )
-            )
-        from_date = run_data.get("date_start")
-        to_date = run_data.get("date_end")
-        if not data["employee_ids"]:
-            raise UserError(_("You must select employee(s) to generate payslip(s)."))
-        for employee in self.env["hr.employee"].browse(data["employee_ids"]):
-            slip_data = self.env["hr.payslip"].onchange_employee_id(from_date, to_date, employee.id, contract_id=False)
-            res = {
-                "employee_id": employee.id,
-                "name": slip_data["value"].get("name"),
-                "struct_id": slip_data["value"].get("struct_id"),
-                "contract_id": slip_data["value"].get("contract_id"),
-                "payslip_run_id": active_id,
-                "input_line_ids": [(0, 0, x) for x in slip_data["value"].get("input_line_ids")],
-                "worked_days_line_ids": [(0, 0, x) for x in slip_data["value"].get("worked_days_line_ids")],
-                "date_from": from_date,
-                "date_to": to_date,
-                "credit_note": run_data.get("credit_note"),
-                "pay_type": run_data["pay_type"],  # probuse
-                "old_percentage": run_data["old_percentage"],  # probuse
-                "mid_percentage": run_data["mid_percentage"],  # probuse
-                "journal_id": run_data["journal_id"][0],  # probuse
-                # probuse
-                "struct_id": run_data["struct_id"]
-                and run_data["struct_id"][0]
-                or slip_data["value"]["struct_id"]
-                or False,
-            }
-            payslips += self.env["hr.payslip"].create(res)
-        payslips.compute_sheet()
-        return {"type": "ir.actions.act_window_close"}
+#     def compute_sheet(self):
+#         payslips = self.env["hr.payslip"]
+#         [data] = self.read()
+#         active_id = self.env.context.get("active_id")
+#         if active_id:
+#             [run_data] = (
+#                 self.env["hr.payslip.run"]
+#                 .browse(active_id)
+#                 .read(
+#                     [
+#                         "date_start",
+#                         "date_end",
+#                         "credit_note",
+#                         "pay_type",
+#                         "old_percentage",
+#                         "mid_percentage",
+#                         "journal_id",
+#                         "struct_id",
+#                     ]
+#                 )
+#             )
+#         from_date = run_data.get("date_start")
+#         to_date = run_data.get("date_end")
+#         if not data["employee_ids"]:
+#             raise UserError(_("You must select employee(s) to generate payslip(s)."))
+#         for employee in self.env["hr.employee"].browse(data["employee_ids"]):
+#             slip_data = self.env["hr.payslip"]._onchange_employee()
+#             res = {
+#                 "employee_id": employee.id,
+#                 "name": slip_data["value"].get("name"),
+#                 "struct_id": slip_data["value"].get("struct_id"),
+#                 "contract_id": slip_data["value"].get("contract_id"),
+#                 "payslip_run_id": active_id,
+#                 "input_line_ids": [(0, 0, x) for x in slip_data["value"].get("input_line_ids")],
+#                 "worked_days_line_ids": [(0, 0, x) for x in slip_data["value"].get("worked_days_line_ids")],
+#                 "date_from": from_date,
+#                 "date_to": to_date,
+#                 "credit_note": run_data.get("credit_note"),
+#                 "pay_type": run_data["pay_type"],  # probuse
+#                 "old_percentage": run_data["old_percentage"],  # probuse
+#                 "mid_percentage": run_data["mid_percentage"],  # probuse
+#                 "journal_id": run_data["journal_id"][0],  # probuse
+#                 # probuse
+#                 "struct_id": run_data["struct_id"]
+#                 and run_data["struct_id"][0]
+#                 or slip_data["value"]["struct_id"]
+#                 or False,
+#             }
+#             payslips += self.env["hr.payslip"].create(res)
+#         payslips.compute_sheet()
+#         return {"type": "ir.actions.act_window_close"}
