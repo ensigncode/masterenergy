@@ -2,35 +2,36 @@ import time
 import datetime
 from odoo import api, fields, models
 
+mnths = []
+mnths_total = []
+rules = []
+rules_data = []
+total = 0.0
 
 class payroll_register_report(models.AbstractModel):
     _name = "report.ng_hr_payroll.payroll_register_report"
 
-    mnths = []
-    mnths_total = []
-    rules = []
-    rules_data = []
-
-    total = 0.0
 
     def get_periods(self, form):
 
-    #     #
+        mnth_name = []
+        # rules = []
+        #        category_id = form.get('category_id', [])
+        #        category_id = category_id and category_id[0] or False
+        #        rule_ids = self.pool.get('hr.salary.rule').search(self.cr, self.uid, [('category_id', '=', category_id)])
+        rule_ids = form.get("rule_ids", [])
+  
+        if rule_ids:
+            for r in self.env["hr.salary.rule"].browse(rule_ids):
+                mnth_name.append(r.name)
+                global rules
+                rules.append(r.id)
+        # global rules
+        # global rules_data
+        rules = rules
+        rules_data = mnth_name
+        return [mnth_name]
 
-    #     mnth_name = []
-    #     rules = []
-    #     #        category_id = form.get('category_id', [])
-    #     #        category_id = category_id and category_id[0] or False
-    #     #        rule_ids = self.pool.get('hr.salary.rule').search(self.cr, self.uid, [('category_id', '=', category_id)])
-    #     rule_ids = form.get("rule_ids", [])
-    #     if rule_ids:
-    #         for r in self.env["hr.salary.rule"].browse(rule_ids):
-    #             mnth_name.append(r.name)
-    #             rules.append(r.id)
-    #     self.rules = rules
-    #     self.rules_data = mnth_name
-        # return [mnth_name]
-        return [[fields.Date.to_string(fields.Date.today())]]
 
     def get_salary(self, form, emp_id, emp_salary, total_mnths):
 
@@ -75,7 +76,7 @@ class payroll_register_report(models.AbstractModel):
         total = 0.0
         cnt = 0
         flag = 0
-        for r in self.env["hr.salary.rule"].browse(self.rules):
+        for r in self.env["hr.salary.rule"].browse(rules or []):
             self._cr.execute(
                 "select pl.name as name ,pl.total \
                                  from hr_payslip_line as pl \
@@ -112,7 +113,7 @@ class payroll_register_report(models.AbstractModel):
         total_excel_months = [
             "Total",
         ]  # for excel report
-        for r in range(0, len(self.rules)):
+        for r in range(0, len(rules)):
             total_excel_months.append(0)
         employees = emp_obj.browse(emp_ids)
         for emp_id in employees:
@@ -127,11 +128,12 @@ class payroll_register_report(models.AbstractModel):
             emp_salary.append(total)
             salary_list.append(emp_salary)
             emp_salary = []
-        self.mnths_total.append(total_mnths)
+        mnths_total.append(total_mnths)
         return salary_list
 
     def get_months_tol(self):
-        return self.mnths_total
+        global mnths_total
+        return mnths_total
 
     def get_total(self):
         for item in self.mnths_total:
