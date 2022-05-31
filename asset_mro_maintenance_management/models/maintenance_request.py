@@ -22,22 +22,11 @@ class MaintenanceRequest(models.Model):
     is_task = fields.Boolean(string="Create Task", default=False, copy=False,)
     is_requisition = fields.Boolean(string="Create Requisition", default=False, copy=False,)
 
-    # def _get_type_id(self):
-    #    return self.env['purchase.requisition.type'].search([], limit=1)
-
-    # type_id = fields.Many2one(
-    #    'purchase.requisition.type',
-    #    string="Agreement Type",
-    #    required=True,
-    #    default=_get_type_id,
-    # )
 
     def _get_picking_in(self):
-        # pick_in = self.env.ref#('stock.picking_type_in')
         pick_in = False
         if not pick_in:
-            # company = self.env['res.company']._company_default_get(
-            # 'purchase.requisition')
+
             company = self.env.company
             pick_in = self.env["stock.picking.type"].search(
                 [("warehouse_id.company_id", "=", company.id), ("code", "=", "incoming")], limit=1,
@@ -46,7 +35,7 @@ class MaintenanceRequest(models.Model):
 
     picking_type_id = fields.Many2one("stock.picking.type", "Operation Type", required=True, default=_get_picking_in,)
 
-    # @api.multi #odoo13
+ 
     def write(self, values):
         for rec in self:
             if values.get("equipment_id", False):
@@ -79,7 +68,7 @@ class MaintenanceRequest(models.Model):
 
         return super(MaintenanceRequest, self).write(values)
 
-    # @api.multi #odoo13
+
     def create_task(self):
         for rec in self:
             task_vals = {
@@ -99,7 +88,7 @@ class MaintenanceRequest(models.Model):
         res["domain"] = str([("maintenance_request_id", "=", self.id)])
         return res
 
-    # @api.multi #odoo13
+
     def show_task(self):
         # res = self.env.ref('website_job_workorder_request.action_website_job_workorder_request')
         res = self.env.ref("website_job_workorder_request.custom_wo_action_website_job_workorder_request")  # 13
@@ -107,7 +96,7 @@ class MaintenanceRequest(models.Model):
         res["domain"] = str([("maintenance_request_id", "=", self.id)])
         return res
 
-    # @api.multi #odoo13
+
     def create_purchase_requisition(self):
         for rec in self:
             if not rec.material_ids:
@@ -155,7 +144,7 @@ class MaintenanceRequest(models.Model):
         res["domain"] = str([("maintenance_request_id", "=", rec.id)])
         return res
 
-    # @api.multi #odoo13
+
     def show_purchase_requisition(self):
         res = self.env.ref("material_purchase_requisitions.action_material_purchase_requisition")
         res = res.read()[0]

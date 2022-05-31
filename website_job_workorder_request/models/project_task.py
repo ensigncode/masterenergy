@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
 from odoo import fields, models, api
 
 
 class ProjectTask(models.Model):
     _inherit = "project.task"
 
-    # @api.multi
+    # 
     @api.depends("custom_wo_purchase_requisition_ids")
     def customwo_purchase_requisition_count(self):
         for rec in self:
@@ -35,7 +33,7 @@ class ProjectTask(models.Model):
     custom_wo_purchase_requisition_count = fields.Integer(compute="customwo_purchase_requisition_count", store=True,)
 
     custom_wo_custome_client_user_id = fields.Many2one(
-        "res.users", string="Job Order Created User", readonly=True, track_visibility="always"
+        "res.users", string="Job Order Created User", readonly=True, tracking=True
     )
 
     @api.model
@@ -49,15 +47,7 @@ class ProjectTask(models.Model):
             vals.update({"custom_wo_custome_client_user_id": self.env.user.id, "custom_wo_number": number})
         return super(ProjectTask, self).create(vals)
 
-    #    @api.model
-    #    def create(self, vals):
-    #        number = self.env['ir.sequence'].next_by_code('job.order.seq')
-    #        vals.update({
-    #            'number': number
-    #            })
-    #        return super(ProjectTask, self).create(vals)
-
-    # @api.multi
+ 
     def custom_wo_send_joborder(self):
         self.ensure_one()
         ir_model_data = self.env["ir.model.data"]
@@ -80,7 +70,7 @@ class ProjectTask(models.Model):
                 "default_template_id": template_id,
                 "default_composition_mode": "comment",
                 "mark_so_as_sent": True,
-                #'custom_layout': "sale.mail_template_data_notification_email_sale_order",
+            
             }
         )
         return {
@@ -94,7 +84,7 @@ class ProjectTask(models.Model):
             "context": ctx,
         }
 
-    # @api.multi
+    # 
     def custom_wo_show_purchase_requisition(self):
         #        sel.ensure_one()
         self.ensure_one()
@@ -109,5 +99,3 @@ class ProjectProject(models.Model):
 
     custome_code = fields.Char(string="Reference",)
 
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

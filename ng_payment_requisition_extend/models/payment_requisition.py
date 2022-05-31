@@ -4,11 +4,11 @@ from odoo import fields, models, api, _, exceptions
 class PaymentRequisition(models.Model):
     _inherit = "payment.requisition"
 
-    @api.multi
+    
     def action_pay(self):
         request = super(PaymentRequisition, self).action_pay()
         print("Request Received: " + str(request))
-        # request = True
+
         payment = self.env["account.payment"]
         if request:
             for record in self:

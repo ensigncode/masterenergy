@@ -50,7 +50,7 @@ class IRRequest(models.Model):
         string="Request Date", default=lambda self: fields.Date.today(), help="The day in which request was initiated"
     )
     request_deadline = fields.Date(string="Deadline")
-    hod = fields.Many2one(comodel_name="hr.employee", related="end_user.parent_id", string="HOD")
+    hod = fields.Many2one(comodel_name="hr.employee", related="end_user.parent_id", string="Manager")
     department = fields.Many2one(comodel_name="hr.department", related="end_user.department_id", string="Department")
     request_type = fields.Selection(
         selection=[("purchase", "Purchase"), ("sale", "Sale")], string="Request Type", required=True
