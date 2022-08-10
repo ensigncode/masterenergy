@@ -39,9 +39,14 @@ class contrib_reg_employee_report(models.AbstractModel):
     def set_context(self, objects, data, ids, report_type=None):
         self.date_from = data["form"].get("date_from", time.strftime("%Y-%m-%d"))
         self.date_to = data["form"].get(
-            "date_to", str(datetime.now() + relativedelta.relativedelta(months=+1, day=1, days=-1))[:10]
+            "date_to",
+            str(
+                datetime.now() + relativedelta.relativedelta(months=+1, day=1, days=-1)
+            )[:10],
         )
-        return super(contrib_reg_employee_report, self).set_context(objects, data, ids, report_type=report_type)
+        return super(contrib_reg_employee_report, self).set_context(
+            objects, data, ids, report_type=report_type
+        )
 
     def sum_total(self):
         self.sum_total_grand_amount += self.regi_total
@@ -101,7 +106,9 @@ class contrib_reg_employee_report(models.AbstractModel):
             "docs": docs,
             "company": self.env.user.company_id,
         }
-        return self.env["report"].render("ng_hr_payroll.contribution_register_emp_report", values=docargs)
+        return self.env["report"].render(
+            "ng_hr_payroll.contribution_register_emp_report", values=docargs
+        )
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

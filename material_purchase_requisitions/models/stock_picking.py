@@ -7,7 +7,10 @@ class StockPicking(models.Model):
     _inherit = "stock.picking"
 
     custom_requisition_id = fields.Many2one(
-        "material.purchase.requisition", string="Purchase Requisition", readonly=True, copy=True
+        "material.purchase.requisition",
+        string="Purchase Requisition",
+        readonly=True,
+        copy=True,
     )
 
 

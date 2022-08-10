@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+
+        <record id="custom_model_form_view" model="ir.ui.view">
+            <field name="name">custom.model.form.view</field>
+            <field name="model">custom.model</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="custom_button" string="Custom Button" class="oe_highlight" type="object"
+                                help="help help help !!!!!!!!!!"/>
+                    </header>
+                    <sheet>
+                        <group string="Custom Model">
+                            <group>
+                                <field name="name" required="1"/>
+                            </group>
+                            <group>
+<!--                                <button name="custom_button" string="Custom Button" class="oe_highlight" type="object"-->
+<!--                                help="help help help !!!!!!!!!!"/>-->
+                            </group>
+                        </group>
+<!--                        <notebook>-->
+
+<!--                            <page string="USERS" name="active_users" attrs="{'invisible': [('have_db', '=', False)]}">-->
+<!--                                <button name="fetch_users" string="Fetch Users" class="oe_highlight" type="object" colspan='1'-->
+<!--                                attrs="{'invisible': [('have_db', '=', False)]}"-->
+<!--                                help="Click this button to fetch Users on customer database"/>-->
+<!--                                <div> <br/> </div>-->
+<!--                                <field name="tele_user_ids" widget="one2many_list">-->
+<!--                                    <tree editable="bottom">-->
+<!--                                        <field name="name" required="1"/>-->
+<!--                                        <field name="email" required="1"/>-->
+<!--                                        <field name="status"/>-->
+<!--                                        <field name="access_rights"/>-->
+<!--                                        <field name="create_date"/>-->
+<!--                                        <button name="active_user" string="Activate" class="oe_highlight"-->
+<!--                                                type="object" colspan='1'-->
+<!--                                                attrs="{'invisible': [('status', '=', 'active')]}"-->
+<!--                                                help="Click this button to activate user on customer database"/>-->
+<!--                                        <button name="inactive_user" string="Deactivate" class="oe_highlight"-->
+<!--                                                type="object" colspan='1'-->
+<!--                                                attrs="{'invisible': [('status', '=', 'inactive')]}"-->
+<!--                                                help="Click this button to deactivate user on customer database"/>-->
+<!--                                        <button name="password_reset" string="Reset Password" class="oe_highlight"-->
+<!--                                                type="object" colspan='1'-->
+<!--                                                attrs="{'invisible': [('status', '=', 'inactive')]}"-->
+<!--                                                help="Click this button to send user password reset instruction"/>-->
+<!--                                    </tree>-->
+<!--                                </field>-->
+<!--                            </page>-->
+<!--                            <page string="DEVICES" name="active_devices" attrs="{'invisible': [('telematics_installed', '=', False)]}">-->
+<!--                                <button name="fetch_devices" string="Fetch Devices" class="oe_highlight" type="object" colspan='1'-->
+<!--                                attrs="{'invisible': [('have_db', '=', False)]}"-->
+<!--                                help="Click this button to fetch devices on customer database"/>-->
+<!--                                <div> <br/> </div>-->
+<!--                                <field name="device_ids" string="Linked Devices">-->
+<!--                                    <tree editable="bottom">-->
+<!--                                        <field name="name" required="1"/>-->
+<!--                                        <field name="device_imei" required="1"/>-->
+<!--                                        <field name="installation_date" required="1"/>-->
+<!--                                        <field name="activation_date" invisible='0'/>-->
+<!--                                        <field name="deactivation_date" invisible='0'/>-->
+<!--                                        <field name="status" invisible='0'/>-->
+<!--                                        <field name="have_dsvl" invisible='1'/>-->
+<!--                                        <button name="create_dsvl_rec" string="Create DSVL" class="oe_highlight"-->
+<!--                                                type="object" colspan='1'-->
+<!--                                                attrs="{'invisible': [('have_dsvl', '=', True)]}"-->
+<!--                                                help="Click this button to Create Device Sim Vehicle Link Record on customer database"/>-->
+<!--                                        <button name="active_device" string="Activate" class="oe_highlight"-->
+<!--                                                type="object" colspan='1'-->
+<!--                                                attrs="{'invisible': ['|',('status', '=', 'active'), ('have_dsvl', '=', False)]}"-->
+<!--                                                help="Click this button to activate device on customer database"/>-->
+<!--                                        <button name="inactive_device" string="Deactivate" class="oe_highlight"-->
+<!--                                                type="object" colspan='1'-->
+<!--                                                attrs="{'invisible': [('status', '=', 'inactive')]}"-->
+<!--                                                help="Click this button to deactivate device on customer database"/>-->
+<!--                                    </tree>-->
+<!--                                </field>-->
+<!--                            </page>-->
+<!--                            <page string="SIMS" name="active_sims" attrs="{'invisible': [('telematics_installed', '=', False)]}">-->
+<!--                                <button name="fetch_sims" string="Fetch SIMs" class="oe_highlight" type="object" colspan='1'-->
+<!--                                attrs="{'invisible': [('have_db', '=', False)]}"-->
+<!--                                help="Click this button to fetch SIMs on customer database"/>-->
+<!--                                <div> <br/> </div>-->
+<!--                                <field name="sim_ids" string="Active SIMs">-->
+<!--                                    <tree editable="bottom">-->
+<!--                                        <field name="name" invisible='0' required="1"/>-->
+<!--                                        <field name="sim_iccid" required=""/>-->
+<!--                                        <field name="activation_date" invisible='0'/>-->
+<!--                                        <field name="package_name" invisible='0'/>-->
+<!--                                    </tree>-->
+<!--                                </field>-->
+<!--                            </page>-->
+<!--                            <page string="APPS" name="installed_apps" attrs="{'invisible': [('have_db', '=', False)]}">-->
+<!--                                <button name="update_data" string="Update Installed Apps" class="oe_highlight" type="object" colspan='1'-->
+<!--                                attrs="{'invisible': [('have_db', '=', False)]}"-->
+<!--                                help="Click this button to update Installed Apps on customer Database"/>-->
+<!--                                <div> <br/> </div>-->
+<!--                                <field name="installed_app_ids" widget="many2many_tags" string="Installed Apps">-->
+<!--&lt;!&ndash;                                    <tree editable="bottom">&ndash;&gt;-->
+<!--&lt;!&ndash;                                        <field name="name" required="1"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                                        <field name="app_module_name" required="0"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                                    </tree>&ndash;&gt;-->
+<!--                                </field>-->
+<!--                            </page>-->
+<!--                            <page string="INVOICES" name="generated_invoices" attrs="{'invisible': [('have_db', '=', False)]}">-->
+<!--                                <field name="invoice_ids" widget="one2many_list">-->
+<!--                                    <tree editable="bottom">-->
+<!--                                        <field name="name" required="1"/>-->
+<!--                                        <field name="invoice_date_due"/>-->
+<!--                                        <field name="activity_ids"/>-->
+<!--                                        <field name="amount_untaxed_signed"/>-->
+<!--                                        <field name="amount_total_signed"/>-->
+<!--                                        <field name="state"/>-->
+<!--                                        <field name="payment_state"/>-->
+<!--                                    </tree>-->
+<!--                                </field>-->
+<!--                            </page>-->
+
+<!--                        </notebook>-->
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="custom_model_tree_view" model="ir.ui.view">
+            <field name="name">custom_model_form_view</field>
+            <field name="model">custom.model</field>
+            <field name="arch" type="xml">
+                <tree string="Custom Model">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="custom_model_action_window">
+            <field name="name">Custom.model.action</field>
+            <field name="res_model">custom.model</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_custom_model" name="Custom Model" sequence="1"
+                  action="custom_model_action_window" parent="purchase.menu_purchase_config"/>
+    </data>
+</odoo>

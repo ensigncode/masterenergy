@@ -62,7 +62,10 @@ class hr_holidays(models.Model):
     carry_fw_allocation = fields.Boolean(string="Is Carry Forwarded?", default=False)
 
     policy = fields.Selection(
-        selection=[("earned", "Deduct From Earned Leaves"), ("payslip", "Deduct From Salary")],
+        selection=[
+            ("earned", "Deduct From Earned Leaves"),
+            ("payslip", "Deduct From Salary"),
+        ],
         string="Leave Deduction",
         required=True,
         readonly=True,
@@ -78,7 +81,16 @@ class HRHolidaysStatus(models.Model):
 
     def get_days(self, employee_id):
         result = dict(
-            (id, dict(max_leaves=0, leaves_taken=0, remaining_leaves=0, virtual_remaining_leaves=0)) for id in self.ids
+            (
+                id,
+                dict(
+                    max_leaves=0,
+                    leaves_taken=0,
+                    remaining_leaves=0,
+                    virtual_remaining_leaves=0,
+                ),
+            )
+            for id in self.ids
         )
         holiday_ids = self.env["hr.leave"].search(
             [
@@ -97,10 +109,13 @@ class HRHolidaysStatus(models.Model):
         default=False,
     )
     can_carryfw = fields.Boolean(
-        string="Carry Forward", help="Tick if you want to include this type of leaves to carry forward next year."
+        string="Carry Forward",
+        help="Tick if you want to include this type of leaves to carry forward next year.",
     )
     is_legal = fields.Boolean(
-        string="Legal Leave?", help="Tick if you want to set this type of leaves as legal leaves.", default=False
+        string="Legal Leave?",
+        help="Tick if you want to set this type of leaves as legal leaves.",
+        default=False,
     )
     can_cash = fields.Boolean(
         string="Cash Reimbursement",
@@ -228,7 +243,12 @@ class payroll_advice(models.Model):
     _name = "hr.payroll.advice"
     _description = "Bank Advice"
 
-    name = fields.Char(string="Name", readonly=True, required=True, states={"draft": [("readonly", False)]},)
+    name = fields.Char(
+        string="Name",
+        readonly=True,
+        required=True,
+        states={"draft": [("readonly", False)]},
+    )
     note = fields.Text(
         string="Description",
         default="Please make the payroll transfer from above account number to the below mentioned account numbers towards employee salaries:",
@@ -242,7 +262,11 @@ class payroll_advice(models.Model):
         help="Advice Date is used to search Payslips",
     )
     state = fields.Selection(
-        selection=[("draft", "Draft"), ("confirm", "Confirmed"), ("cancel", "Cancelled"),],
+        selection=[
+            ("draft", "Draft"),
+            ("confirm", "Confirmed"),
+            ("cancel", "Cancelled"),
+        ],
         string="State",
         index=True,
         readonly=True,
@@ -258,7 +282,8 @@ class payroll_advice(models.Model):
     )
     chaque_nos = fields.Char(string="Cheque Numbers")
     neft = fields.Boolean(
-        string="NEFT Transaction", help="Check this box if your company use online transfer for salary"
+        string="NEFT Transaction",
+        help="Check this box if your company use online transfer for salary",
     )
     company_id = fields.Many2one(
         "res.company",
@@ -307,12 +332,24 @@ class payroll_advice(models.Model):
             if old_line_ids:
                 old_line_ids.unlink()
             slip_ids = payslip_pool.search(
-                [("date_from", "<=", advice.date), ("date_to", ">=", advice.date), ("state", "=", ["draft", "done"])]
+                [
+                    ("date_from", "<=", advice.date),
+                    ("date_to", ">=", advice.date),
+                    ("state", "=", ["draft", "done"]),
+                ]
             )
             for slip in slip_ids:
-                if not slip.employee_id.bank_account_id or not slip.employee_id.bank_account_id.acc_number:
-                    raise Warning(_("Please define bank account for the %s employee") % (slip.employee_id.name))
-                line_ids = payslip_line_pool.search([("slip_id", "=", slip.id), ("code", "=", "NET")], limit=1)
+                if (
+                    not slip.employee_id.bank_account_id
+                    or not slip.employee_id.bank_account_id.acc_number
+                ):
+                    raise Warning(
+                        _("Please define bank account for the %s employee")
+                        % (slip.employee_id.name)
+                    )
+                line_ids = payslip_line_pool.search(
+                    [("slip_id", "=", slip.id), ("code", "=", "NET")], limit=1
+                )
                 if line_ids:
                     advice_line = {
                         "advice_id": advice.id,
@@ -336,7 +373,9 @@ class payroll_advice(models.Model):
         seq_obj = self.env["ir.sequence"]
         for advice in self:
             if not advice.line_ids:
-                raise Warning(_("You can not confirm Payment advice without advice lines."))
+                raise Warning(
+                    _("You can not confirm Payment advice without advice lines.")
+                )
             advice_date = advice.date
             advice_year = advice_date.strftime("%m") + "-" + advice_date.strftime("%Y")
             number = seq_obj.get("payment.advice")
@@ -345,13 +384,11 @@ class payroll_advice(models.Model):
         return True
 
     def set_to_draft(self):
-        """Resets Advice as draft.
-        """
+        """Resets Advice as draft."""
         return self.write({"state": "draft"})
 
     def cancel_sheet(self):
-        """Marks Advice as cancelled.
-        """
+        """Marks Advice as cancelled."""
         return self.write({"state": "cancel"})
 
     def onchange_company_id(self, company_id=False):
@@ -378,9 +415,13 @@ class hr_payslip_run(models.Model):
     def cancel_batch(self):
         return self.write({"state": "cancel"})
 
-    mid_month = fields.Boolean(string="Mid Month Payroll", help="Tick if you want to process for mid month payroll.")
+    mid_month = fields.Boolean(
+        string="Mid Month Payroll",
+        help="Tick if you want to process for mid month payroll.",
+    )
     mid_percentage = fields.Float(
-        string="Percentage", help="Enter the percentage of selected structure to process: 0-100"
+        string="Percentage",
+        help="Enter the percentage of selected structure to process: 0-100",
     )
     old_percentage = fields.Float(
         string="Last Percentage",
@@ -465,7 +506,10 @@ class hr_payslip_run(models.Model):
         for run in self:
             if run.available_advice:
                 raise Warning(
-                    _("Payment advice already exists for %s, 'Set to Draft' to create a new advice.") % (run.name)
+                    _(
+                        "Payment advice already exists for %s, 'Set to Draft' to create a new advice."
+                    )
+                    % (run.name)
                 )
             advice_data = {
                 "batch_id": run.id,
@@ -485,9 +529,17 @@ class hr_payslip_run(models.Model):
                 slip_ids.append(slip_id)
 
             for slip in slip_ids:
-                if not slip.employee_id.bank_account_id or not slip.employee_id.bank_account_id.acc_number:
-                    raise Warning(_("Please define bank account for the %s employee") % (slip.employee_id.name))
-                line_ids = payslip_line_pool.search([("slip_id", "=", slip.id), ("code", "=", "NET")], limit=1)
+                if (
+                    not slip.employee_id.bank_account_id
+                    or not slip.employee_id.bank_account_id.acc_number
+                ):
+                    raise Warning(
+                        _("Please define bank account for the %s employee")
+                        % (slip.employee_id.name)
+                    )
+                line_ids = payslip_line_pool.search(
+                    [("slip_id", "=", slip.id), ("code", "=", "NET")], limit=1
+                )
                 if line_ids:
                     advice_line = {
                         "advice_id": advice_id.id,
@@ -511,7 +563,12 @@ class payroll_advice_line(models.Model):
         if not employee_id:
             return {"value": res}
         employee = hr_obj.browse(employee_id)
-        res.update({"name": employee.bank_account_id.acc_number, "ifsc_code": employee.bank_account_id.bank_bic or ""})
+        res.update(
+            {
+                "name": employee.bank_account_id.acc_number,
+                "ifsc_code": employee.bank_account_id.bank_bic or "",
+            }
+        )
         return {"value": res}
 
     _name = "hr.payroll.advice.line"
@@ -522,13 +579,23 @@ class payroll_advice_line(models.Model):
     ifsc_code = fields.Char(string="IFSC Code")
     employee_id = fields.Many2one("hr.employee", string="Employee", required=True)
     bank_account_id = fields.Many2one(
-        related="employee_id.bank_account_id", relation="res.partner.bank", string="Bank Account", store=True
+        related="employee_id.bank_account_id",
+        relation="res.partner.bank",
+        string="Bank Account",
+        store=True,
     )
-    bank_id = fields.Many2one(related="bank_account_id.bank_id", relation="res.bank", string="Bank", store=True)
+    bank_id = fields.Many2one(
+        related="bank_account_id.bank_id",
+        relation="res.bank",
+        string="Bank",
+        store=True,
+    )
     bank_name = fields.Char(related="bank_id.name", string="Bank Name", store=True)
     bysal = fields.Float(string="By Salary", digits="Payroll")
     debit_credit = fields.Char(string="C/D", required=False, default="C")
-    company_id = fields.Many2one(related="advice_id.company_id", string="Company", store=True)
+    company_id = fields.Many2one(
+        related="advice_id.company_id", string="Company", store=True
+    )
     ifsc = fields.Boolean(related="advice_id.neft", string="IFSC")
 
 
@@ -543,7 +610,9 @@ class hr_payslip_ot(models.Model):
     name = fields.Char(string="Description", required=True)
     number_of_days = fields.Float(string="Number of Days")
     number_of_hours = fields.Float(string="Number of Hours")
-    payslip_id = fields.Many2one("hr.payslip", string="Pay Slip", required=True, ondelete="cascade", index=True)
+    payslip_id = fields.Many2one(
+        "hr.payslip", string="Pay Slip", required=True, ondelete="cascade", index=True
+    )
 
 
 class hr_payslip(models.Model):
@@ -555,10 +624,17 @@ class hr_payslip(models.Model):
     _description = "Pay Slips"
 
     ot_ids = fields.One2many(
-        "hr.payslip.ot", "payslip_id", string="Overtime", readonly=True, states={"draft": [("readonly", False)]}
+        "hr.payslip.ot",
+        "payslip_id",
+        string="Overtime",
+        readonly=True,
+        states={"draft": [("readonly", False)]},
     )
     advice_id = fields.Many2one(
-        "hr.payroll.advice", string="Bank Advice", readonly=True, states={"draft": [("readonly", False)]}
+        "hr.payroll.advice",
+        string="Bank Advice",
+        readonly=True,
+        states={"draft": [("readonly", False)]},
     )
     mid_month = fields.Boolean(
         string="Mid Month Payroll",
@@ -588,11 +664,15 @@ class hr_payslip(models.Model):
         default="dynamic",
     )
 
-    def onchange_employee_id(self, date_from, date_to, employee_id=False, contract_id=False):
+    def onchange_employee_id(
+        self, date_from, date_to, employee_id=False, contract_id=False
+    ):
         ot_obj = self.env["hr.payslip.ot"]
         res = super(hr_payslip, self)._onchange_employee()
         # delete old ot days lines
-        old_ot_days_ids = self.ids and ot_obj.search([("payslip_id", "=", self.ids[0])]) or False
+        old_ot_days_ids = (
+            self.ids and ot_obj.search([("payslip_id", "=", self.ids[0])]) or False
+        )
         if old_ot_days_ids:
             old_ot_days_ids.unlink()
         if (not employee_id) or (not date_from) or (not date_to):
@@ -611,7 +691,11 @@ class hr_payslip(models.Model):
         )
         for ot in ot_ids:
             ot_list.append(
-                {"name": ot.name, "number_of_hours": ot.number_of_hours, "number_of_days": ot.number_of_days}
+                {
+                    "name": ot.name,
+                    "number_of_hours": ot.number_of_hours,
+                    "number_of_days": ot.number_of_days,
+                }
             )
         if ot_list:
             res["value"].update({"ot_ids": ot_list})
@@ -622,7 +706,9 @@ class hr_payslip(models.Model):
     def get_payslip_lines(self, contract_ids, payslip_id):
         def _sum_salary_rule_category(localdict, category, amount):
             if category.parent_id:
-                localdict = _sum_salary_rule_category(localdict, category.parent_id, amount)
+                localdict = _sum_salary_rule_category(
+                    localdict, category.parent_id, amount
+                )
             localdict["categories"].dict[category.code] = (
                 category.code in localdict["categories"].dict
                 and localdict["categories"].dict[category.code] + amount
@@ -758,7 +844,9 @@ class hr_payslip(models.Model):
                 res = self._cr.fetchone()
                 return res and res[0] or 0.0
 
-            def get_timesheet_lines(self, emp_id, date_from, date_to=None, anlaytic_account=False):
+            def get_timesheet_lines(
+                self, emp_id, date_from, date_to=None, anlaytic_account=False
+            ):
                 if date_to is None:
                     date_to = fields.Date.today()
                 if anlaytic_account:  # expert anlaytic account timesheet bdu.
@@ -808,11 +896,15 @@ class hr_payslip(models.Model):
         if payslip.struct_id:  # probuse
             structure_ids = [payslip.struct_id.id]  # probuse
             #             structure_ids.extend(self.env['hr.payroll.structure']._get_parent_structure(structure_ids))
-            structure_ids.extend(payslip.struct_id._get_parent_structure().ids)  # probuse
+            structure_ids.extend(
+                payslip.struct_id._get_parent_structure().ids
+            )  # probuse
         else:  # probuse
             structure_ids = contracts.get_all_structures()
         # get the rules of the structure and thier children
-        rule_ids = self.env["hr.payroll.structure"].browse(structure_ids).get_all_rules()
+        rule_ids = (
+            self.env["hr.payroll.structure"].browse(structure_ids).get_all_rules()
+        )
         # run the rules by sequence
         sorted_rule_ids = [id for id, sequence in sorted(rule_ids, key=lambda x: x[1])]
         sorted_rules = self.env["hr.salary.rule"].browse(sorted_rule_ids)
@@ -839,7 +931,9 @@ class hr_payslip(models.Model):
                             pass
                         else:
                             amount = amount * p / 100
-                    if rule.code == "TAXPAYFIRST":  # 25 oct 2013 # Persnal allwonce wil calc from here only
+                    if (
+                        rule.code == "TAXPAYFIRST"
+                    ):  # 25 oct 2013 # Persnal allwonce wil calc from here only
                         # That line called PERSONAL ALLOW means we will compare 1% of Gross with 200000 and take the higher figure. Then add 20% of Gross Income to this. This will give us the figure for Personal Allowance
                         # Compare 1% of Gross * 12 with N200000 and take the higher figure. Then add 20% of Gross Income * 12. This will give the Personal Allowance Line
                         one_gross = (store_gross * 0.01) * 12
@@ -855,7 +949,9 @@ class hr_payslip(models.Model):
                         if (store_gross * 0.01) > a:
                             amount = -(store_gross * 0.01)
 
-                    if rule.code == "PERNG":  # 25 oct 2013 # Persnal allwonce wil calc from here only
+                    if (
+                        rule.code == "PERNG"
+                    ):  # 25 oct 2013 # Persnal allwonce wil calc from here only
                         # That line called PERSONAL ALLOW means we will compare 1% of Gross with 200000 and take the higher figure. Then add 20% of Gross Income to this. This will give us the figure for Personal Allowance
                         # Compare 1% of Gross * 12 with N200000 and take the higher figure. Then add 20% of Gross Income * 12. This will give the Personal Allowance Line
                         one_gross = (store_gross * 0.01) * 12
@@ -869,7 +965,9 @@ class hr_payslip(models.Model):
                         # probuse end-----------------------
 
                     # check if there is already a rule computed with that code
-                    previous_amount = rule.code in localdict and localdict[rule.code] or 0.0
+                    previous_amount = (
+                        rule.code in localdict and localdict[rule.code] or 0.0
+                    )
                     # set/overwrite the amount computed for this rule in the localdict
                     tot_rule = 0.0  # probuse
                     if amount and qty and rate:  # probuse
@@ -877,7 +975,9 @@ class hr_payslip(models.Model):
                     localdict[rule.code] = tot_rule
                     rules_dict[rule.code] = rule
                     # sum the amount for its salary category
-                    localdict = _sum_salary_rule_category(localdict, rule.category_id, tot_rule - previous_amount)
+                    localdict = _sum_salary_rule_category(
+                        localdict, rule.category_id, tot_rule - previous_amount
+                    )
                     # create/overwrite the rule in the temporary results
                     if rule.code == "GROSS":  # probuse
                         store_gross = amount  # probuse
@@ -954,12 +1054,18 @@ class hr_payslip(models.Model):
                 pass
             else:
                 raise Warning(
-                    _("You can not create Paysip(s) as Salary Structure still need to approve by authorize person.")
+                    _(
+                        "You can not create Paysip(s) as Salary Structure still need to approve by authorize person."
+                    )
                 )
         if vals.get("company_id", False):
             company = self.env["res.company"].browse(vals["company_id"]).no_payroll_run
             if len(pays) > company:
-                raise Warning(_("You are running payroll more than the setting on the configuration of company"))
+                raise Warning(
+                    _(
+                        "You are running payroll more than the setting on the configuration of company"
+                    )
+                )
                 pass
         return super(hr_payslip, self).create(vals)
 
@@ -980,35 +1086,69 @@ class hr_payslip(models.Model):
                     contract_ids = [payslip.contract_id.id]
                 else:
                     # if we don't give the contract, then the rules to apply should be for all current contracts of the employee
-                    contract_ids = self.get_contract(payslip.employee_id, payslip.date_from, payslip.date_to)
-                lines = [(0, 0, line) for line in payslip.get_payslip_lines(contract_ids, payslip.id)]
+                    contract_ids = self.get_contract(
+                        payslip.employee_id, payslip.date_from, payslip.date_to
+                    )
+                lines = [
+                    (0, 0, line)
+                    for line in payslip.get_payslip_lines(contract_ids, payslip.id)
+                ]
                 pay = False
                 for line in lines:
                     if context.get("base", "basic"):
                         if context.get("merge", True):
                             if line[2].get("code") == context.get("base"):
                                 line[2]["quantity"] = line[2]["quantity"] + 1
-                            elif context.get("base") == "gross_per" and line[2].get("code") == "GROSS":
-                                line[2]["amount"] += line[2]["amount"] * context.get("percent", "1.0")
-                            elif context.get("base") == "net_per" and line[2].get("code") == "NET":
-                                line[2]["amount"] += line[2]["amount"] * context.get("percent", "1.0")
+                            elif (
+                                context.get("base") == "gross_per"
+                                and line[2].get("code") == "GROSS"
+                            ):
+                                line[2]["amount"] += line[2]["amount"] * context.get(
+                                    "percent", "1.0"
+                                )
+                            elif (
+                                context.get("base") == "net_per"
+                                and line[2].get("code") == "NET"
+                            ):
+                                line[2]["amount"] += line[2]["amount"] * context.get(
+                                    "percent", "1.0"
+                                )
                         else:
                             if line[2].get("code") == context.get("base"):
                                 pay = line
-                            elif context.get("base") == "gross_per" and line[2].get("code") == "GROSS":
+                            elif (
+                                context.get("base") == "gross_per"
+                                and line[2].get("code") == "GROSS"
+                            ):
                                 percent_line = {}
                                 percent_line.update(line[2])
-                                percent_line.update({"amount": percent_line["amount"] * context.get("percent", "1.0")})
+                                percent_line.update(
+                                    {
+                                        "amount": percent_line["amount"]
+                                        * context.get("percent", "1.0")
+                                    }
+                                )
                                 pay = (0, 0, percent_line)
-                            elif context.get("base") == "net_per" and line[2].get("code") == "NET":
+                            elif (
+                                context.get("base") == "net_per"
+                                and line[2].get("code") == "NET"
+                            ):
                                 percent_line = {}
                                 percent_line.update(line[2])
-                                percent_line.update({"amount": percent_line["amount"] * context.get("percent", "1.0")})
+                                percent_line.update(
+                                    {
+                                        "amount": percent_line["amount"]
+                                        * context.get("percent", "1.0")
+                                    }
+                                )
                                 pay = (0, 0, percent_line)
                 if not context.get("merge") and pay:
                     lines.append(pay)
                 payslip.write(
-                    {"line_ids": lines, "number": number,}
+                    {
+                        "line_ids": lines,
+                        "number": number,
+                    }
                 )
         else:
             return super(hr_payslip, self).compute_sheet()

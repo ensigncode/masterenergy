@@ -66,7 +66,10 @@ class report_hr_salary_employee_bymonth(models.AbstractModel):
                              left join resource_resource as r on r.id = emp.resource_id  \
                             where p.state = 'done' and p.employee_id = %s and pl.category_id = %s \
                             group by r.name, p.date_to,emp.id",
-            (emp_id, category_id,),
+            (
+                emp_id,
+                category_id,
+            ),
         )
         sal = self.env.cr.fetchall()
         salary = dict(sal)
@@ -100,7 +103,9 @@ class report_hr_salary_employee_bymonth(models.AbstractModel):
         for emp_id in employees:
             emp_salary.append(emp_id.name)
             total = 0.0
-            emp_salary, total, total_mnths = self.get_salary(form, emp_id.id, emp_salary, total_mnths)
+            emp_salary, total, total_mnths = self.get_salary(
+                form, emp_id.id, emp_salary, total_mnths
+            )
             emp_salary.append(total)
             salary_list.append(emp_salary)
             emp_salary = []
@@ -135,7 +140,9 @@ class report_hr_salary_employee_bymonth(models.AbstractModel):
             "data": data,
             "company": self.env.user.company_id,
         }
-        return self.env["report"].render("ng_hr_payroll.hr_salary_employee_bymonth_ng_report", values=docargs)
+        return self.env["report"].render(
+            "ng_hr_payroll.hr_salary_employee_bymonth_ng_report", values=docargs
+        )
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -12,15 +12,27 @@ class report_payroll_advice(models.AbstractModel):
     def get_month(self, input_date):
         payslip_pool = self.env["hr.payslip"]
         res = {"from_name": "", "to_name": ""}
-        slip_ids = payslip_pool.search([("date_from", "<=", input_date), ("date_to", ">=", input_date)])
+        slip_ids = payslip_pool.search(
+            [("date_from", "<=", input_date), ("date_to", ">=", input_date)]
+        )
         if slip_ids:
             slip = payslip_pool.browse(slip_ids)[0]
             from_date = datetime.strptime(slip.date_from, "%Y-%m-%d")
             to_date = datetime.strptime(slip.date_to, "%Y-%m-%d")
             res["from_name"] = (
-                from_date.strftime("%d") + "-" + from_date.strftime("%B") + "-" + from_date.strftime("%Y")
+                from_date.strftime("%d")
+                + "-"
+                + from_date.strftime("%B")
+                + "-"
+                + from_date.strftime("%Y")
             )
-            res["to_name"] = to_date.strftime("%d") + "-" + to_date.strftime("%B") + "-" + to_date.strftime("%Y")
+            res["to_name"] = (
+                to_date.strftime("%d")
+                + "-"
+                + to_date.strftime("%B")
+                + "-"
+                + to_date.strftime("%Y")
+            )
         return res
 
     def get_bysal_total(self):
@@ -64,7 +76,9 @@ class report_payroll_advice(models.AbstractModel):
             "docs": docs,
             "company": self.env.user.company_id,
         }
-        return self.env["report"].render("ng_hr_payroll.ng_payroll_advise_report", values=docargs)
+        return self.env["report"].render(
+            "ng_hr_payroll.ng_payroll_advise_report", values=docargs
+        )
 
     @api.model
     def _get_report_values(self, docids, data=None):

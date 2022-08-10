@@ -7,27 +7,47 @@ class notice_policy(models.Model):
     _description = "Terminal Notice Policy"
 
     name = fields.Char(string="Description", required=True)
-    company_id = fields.Many2one("res.company", string="Company", default=lambda self: self.env.user.company_id)
-    category_id = fields.Many2one("hr.employee.category", string="Category", required=True)
-    days = fields.Float(string="Days", required=True, help="Give the number of days notice period required")
+    company_id = fields.Many2one(
+        "res.company", string="Company", default=lambda self: self.env.user.company_id
+    )
+    category_id = fields.Many2one(
+        "hr.employee.category", string="Category", required=True
+    )
+    days = fields.Float(
+        string="Days",
+        required=True,
+        help="Give the number of days notice period required",
+    )
     company_base = fields.Selection(
-        selection=[("basic", "Basic Salary"), ("gross", "Gross Salary"), ("fixed", "Fix Amount"), ("", "")],
+        selection=[
+            ("basic", "Basic Salary"),
+            ("gross", "Gross Salary"),
+            ("fixed", "Fix Amount"),
+            ("", ""),
+        ],
         string="Company Payment Basis",
         index=False,
         default="fixed",
     )
     emp_base = fields.Selection(
-        selection=[("basic", "Basic Salary"), ("gross", "Gross Salary"), ("fixed", "Fix Amount"), ("", "")],
+        selection=[
+            ("basic", "Basic Salary"),
+            ("gross", "Gross Salary"),
+            ("fixed", "Fix Amount"),
+            ("", ""),
+        ],
         string="Employee Payment Basis",
         index=False,
         default="fixed",
     )
     notes = fields.Text(string="Notes")
     company_value = fields.Float(
-        string="Company Value", help="If Basis is Fixed Amount, then set value as a fixed amount."
+        string="Company Value",
+        help="If Basis is Fixed Amount, then set value as a fixed amount.",
     )
     emp_value = fields.Float(
-        string="Employee Value", help="If Basis is Fixed Amount, then set value as a fixed amount."
+        string="Employee Value",
+        help="If Basis is Fixed Amount, then set value as a fixed amount.",
     )
 
 
@@ -38,9 +58,15 @@ class terminal_policy(models.Model):
     name = fields.Char(string="Name", required=True)
     code = fields.Char(string="Code")
     allowance_ids = fields.Many2many(
-        "hr.salary.rule", "terminal_allow_rel", "terminal_id", "allow_id", string="Allowances"
+        "hr.salary.rule",
+        "terminal_allow_rel",
+        "terminal_id",
+        "allow_id",
+        string="Allowances",
     )
-    company_id = fields.Many2one("res.company", "Company", default=lambda self: self.env.user.company_id)
+    company_id = fields.Many2one(
+        "res.company", "Company", default=lambda self: self.env.user.company_id
+    )
     base = fields.Selection(
         selection=[
             ("basic", "Basic Salary"),
@@ -64,7 +90,8 @@ class terminal_policy(models.Model):
         help="The qualification is minimum number of years to stay with the company before employee is entitled to terminal benefits.",
     )
     value_month = fields.Float(
-        string="Month Value", help="Enter number of months terminal pay due based on years completed with the company."
+        string="Month Value",
+        help="Enter number of months terminal pay due based on years completed with the company.",
     )
     retrospect = fields.Boolean(
         string="Retrospect",

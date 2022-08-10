@@ -8,9 +8,9 @@ rules = []
 rules_data = []
 total = 0.0
 
+
 class payroll_register_report(models.AbstractModel):
     _name = "report.ng_hr_payroll.payroll_register_report"
-
 
     def get_periods(self, form):
 
@@ -20,7 +20,7 @@ class payroll_register_report(models.AbstractModel):
         #        category_id = category_id and category_id[0] or False
         #        rule_ids = self.pool.get('hr.salary.rule').search(self.cr, self.uid, [('category_id', '=', category_id)])
         rule_ids = form.get("rule_ids", [])
-  
+
         if rule_ids:
             for r in self.env["hr.salary.rule"].browse(rule_ids):
                 mnth_name.append(r.name)
@@ -31,7 +31,6 @@ class payroll_register_report(models.AbstractModel):
         rules = rules
         rules_data = mnth_name
         return [mnth_name]
-
 
     def get_salary(self, form, emp_id, emp_salary, total_mnths):
 
@@ -49,7 +48,12 @@ class payroll_register_report(models.AbstractModel):
                                 where p.employee_id = %s and pl.salary_rule_id = %s \
                                 and (p.date_from >= %s) AND (p.date_to <= %s) \
                                 group by pl.total,r.name, pl.name,emp.id",
-                (emp_id, r.id, form.get("start_date", False), form.get("end_date", False),),
+                (
+                    emp_id,
+                    r.id,
+                    form.get("start_date", False),
+                    form.get("end_date", False),
+                ),
             )
             sal = self._cr.fetchall()
             salary = dict(sal)
@@ -64,7 +68,6 @@ class payroll_register_report(models.AbstractModel):
             else:
                 emp_salary.append("")
 
-
         if len(self.rules) < 8:
             diff = 8 - len(self.rules)
             for x in range(0, diff):
@@ -72,7 +75,7 @@ class payroll_register_report(models.AbstractModel):
         return emp_salary, total, total_mnths
 
     def get_salary1(self, form, emp_id, emp_salary, total_mnths):
-        
+
         total = 0.0
         cnt = 0
         flag = 0
@@ -86,7 +89,12 @@ class payroll_register_report(models.AbstractModel):
                                 where p.employee_id = %s and pl.salary_rule_id = %s \
                                 and (p.date_from >= %s) AND (p.date_to <= %s) \
                                 group by pl.total,r.name, pl.name,emp.id",
-                (emp_id, r.id, form.get("start_date", False), form.get("end_date", False),),
+                (
+                    emp_id,
+                    r.id,
+                    form.get("start_date", False),
+                    form.get("end_date", False),
+                ),
             )
 
             sal = self._cr.fetchall()
@@ -106,7 +114,21 @@ class payroll_register_report(models.AbstractModel):
     def get_employee(self, form, excel=False):
         emp_salary = []
         salary_list = []
-        total_mnths = ["Total", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # only for pdf report!
+        total_mnths = [
+            "Total",
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ]  # only for pdf report!
         emp_obj = self.env["hr.employee"]
         emp_ids = form.get("employee_ids", [])
 
@@ -124,7 +146,9 @@ class payroll_register_report(models.AbstractModel):
                     form, emp_id.id, emp_salary, total_mnths=total_excel_months
                 )
             else:
-                emp_salary, total, total_mnths = self.get_salary(form, emp_id.id, emp_salary, total_mnths)
+                emp_salary, total, total_mnths = self.get_salary(
+                    form, emp_id.id, emp_salary, total_mnths
+                )
             emp_salary.append(total)
             salary_list.append(emp_salary)
             emp_salary = []
@@ -158,5 +182,6 @@ class payroll_register_report(models.AbstractModel):
             "data": data,
             "company": self.env.user.company_id,
         }
-        return self.env["report"].render("ng_hr_payroll.payroll_register_report", values=docargs)
-
+        return self.env["report"].render(
+            "ng_hr_payroll.payroll_register_report", values=docargs
+        )

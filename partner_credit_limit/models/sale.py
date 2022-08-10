@@ -8,16 +8,22 @@ class SaleOrder(models.Model):
     def check_limit(self):
         self.ensure_one()
         partner = self.partner_id
-        user_id = self.env["res.users"].search([("partner_id", "=", partner.id)], limit=1)
+        user_id = self.env["res.users"].search(
+            [("partner_id", "=", partner.id)], limit=1
+        )
         if user_id and not user_id.has_group("base.group_portal") or not user_id:
             moveline_obj = self.env["account.move.line"]
 
-            confirm_sale_order = self.search([("partner_id", "=", partner.id), ("state", "=", "sale")])
+            confirm_sale_order = self.search(
+                [("partner_id", "=", partner.id), ("state", "=", "sale")]
+            )
 
             amount_total = self.amount_total
 
             # partner_credit_limit = partner.credit_limit
-            partner_credit_limit = (self.partner_id.total_due - partner.credit_limit) + amount_total
+            partner_credit_limit = (
+                self.partner_id.total_due - partner.credit_limit
+            ) + amount_total
             available_credit_limit = partner_credit_limit
 
             if available_credit_limit >= 0:
@@ -41,11 +47,15 @@ class SaleOrder(models.Model):
     def create(self, values):
         partner = self.partner_id.id or values.get("partner_id")
         partner = self.env["res.partner"].browse([partner])
-        user_id = self.env["res.users"].search([("partner_id", "=", partner.id)], limit=1)
+        user_id = self.env["res.users"].search(
+            [("partner_id", "=", partner.id)], limit=1
+        )
         if user_id and not user_id.has_group("base.group_portal") or not user_id:
             moveline_obj = self.env["account.move.line"]
 
-            confirm_sale_order = self.search([("partner_id", "=", partner.id), ("state", "=", "sale")])
+            confirm_sale_order = self.search(
+                [("partner_id", "=", partner.id), ("state", "=", "sale")]
+            )
 
             amount_total = 0
             order_line = values.get("order_line")
@@ -53,9 +63,13 @@ class SaleOrder(models.Model):
                 for line in order_line:
                     for l in line:
                         if type(l) == dict:
-                            amount_total += l.get("product_uom_qty", 1) * l.get("price_unit", 0)
+                            amount_total += l.get("product_uom_qty", 1) * l.get(
+                                "price_unit", 0
+                            )
 
-                partner_credit_limit = (partner.total_due - partner.credit_limit) + amount_total
+                partner_credit_limit = (
+                    partner.total_due - partner.credit_limit
+                ) + amount_total
 
                 available_credit_limit = partner_credit_limit
 
@@ -72,11 +86,15 @@ class SaleOrder(models.Model):
     def write(self, values):
         partner = self.partner_id.id or values.get("partner_id")
         partner = self.env["res.partner"].browse([partner])
-        user_id = self.env["res.users"].search([("partner_id", "=", partner.id)], limit=1)
+        user_id = self.env["res.users"].search(
+            [("partner_id", "=", partner.id)], limit=1
+        )
         if user_id and not user_id.has_group("base.group_portal") or not user_id:
             moveline_obj = self.env["account.move.line"]
 
-            confirm_sale_order = self.search([("partner_id", "=", partner.id), ("state", "=", "sale")])
+            confirm_sale_order = self.search(
+                [("partner_id", "=", partner.id), ("state", "=", "sale")]
+            )
 
             amount_total = 0
             order_line = self.order_line
@@ -85,7 +103,9 @@ class SaleOrder(models.Model):
                     for l in line:
                         amount_total += l.price_subtotal
 
-                partner_credit_limit = (partner.total_due - partner.credit_limit) + amount_total
+                partner_credit_limit = (
+                    partner.total_due - partner.credit_limit
+                ) + amount_total
                 print(partner_credit_limit)
 
                 available_credit_limit = partner_credit_limit

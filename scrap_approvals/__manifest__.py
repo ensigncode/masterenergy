@@ -4,6 +4,10 @@
     "author": "Hamza Ilyas",
     "wesbite": "hamza.ilyaaaas@gmail.com",
     "depends": ["base", "stock", "product", "mail"],
-    "data": ["views/scrap_cus.xml", "views/inherit_config_setting.xml", "security/stock_picking_scrap_groups.xml",],
+    "data": [
+        "security/stock_picking_scrap_groups.xml",
+        "views/scrap_cus.xml",
+        "views/inherit_config_setting.xml",
+    ],
     "installable": True,
 }

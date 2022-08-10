@@ -14,21 +14,34 @@ class payroll_reg(models.TransientModel):
     start_date = fields.Date(string="Start Date", required=True)
     end_date = fields.Date(string="End Date", required=True)
     employee_ids = fields.Many2many(
-        "hr.employee", "payroll_register_rel", "payroll_year_id", "employee_id", string="Employees", required=True
+        "hr.employee",
+        "payroll_register_rel",
+        "payroll_year_id",
+        "employee_id",
+        string="Employees",
+        required=True,
     )
     rule_ids = fields.Many2many(
-        "hr.salary.rule", "payroll_register_rel_salary", "reg_id", "rule_id", string="Salary Rules", required=True
+        "hr.salary.rule",
+        "payroll_register_rel_salary",
+        "reg_id",
+        "rule_id",
+        string="Salary Rules",
+        required=True,
     )
-    xls_output = fields.Boolean(string="Excel Output", help="Tick if you want to output of report in excel sheet")
+    xls_output = fields.Boolean(
+        string="Excel Output",
+        help="Tick if you want to output of report in excel sheet",
+    )
 
     def print_report(self):
         """
-         To get the date and print the report
-         @param self: The object pointer.
-         @param cr: A database cursor
-         @param uid: ID of the user currently logged in
-         @param context: A standard dictionary
-         @return: return report
+        To get the date and print the report
+        @param self: The object pointer.
+        @param cr: A database cursor
+        @param uid: ID of the user currently logged in
+        @param context: A standard dictionary
+        @return: return report
         """
         context = self._context or {}
         datas = {"ids": context.get("active_ids", [])}
@@ -41,7 +54,9 @@ class payroll_reg(models.TransientModel):
             workbook = xlwt.Workbook()
             sheet = workbook.add_sheet("Payroll Register")
             sheet.row(0).height = 256 * 3
-            title_style = xlwt.easyxf("font: name Times New Roman,bold on, italic on, height 600")
+            title_style = xlwt.easyxf(
+                "font: name Times New Roman,bold on, italic on, height 600"
+            )
             title_style1 = xlwt.easyxf("font: name Times New Roman,bold on")
             al = xlwt.Alignment()
             al.horz = xlwt.Alignment.HORZ_CENTER
@@ -54,10 +69,14 @@ class payroll_reg(models.TransientModel):
             sheet.write(2, 6, "To", title_style1)
             sheet.write(2, 7, datas["form"]["end_date"], title_style1)
             main_header = obj_pr.get_periods(datas["form"])
-            row = self.render_header(sheet, ["Name"] + main_header[0] + ["Total"], first_row=5)
+            row = self.render_header(
+                sheet, ["Name"] + main_header[0] + ["Total"], first_row=5
+            )
 
             emp_datas = obj_pr.get_employee(datas["form"], excel=True)
-            value_style = xlwt.easyxf("font: name Helvetica,bold on", num_format_str="#,##0.00")
+            value_style = xlwt.easyxf(
+                "font: name Helvetica,bold on", num_format_str="#,##0.00"
+            )
             cell_count = 0
             for value in emp_datas:
                 for v in value:
@@ -90,9 +109,13 @@ class payroll_reg(models.TransientModel):
 
             actid = self.env.ref("base.action_attachment")[0]
             myres = actid.read()[0]
-            myres["domain"] = "[('id','in',[" + ",".join(map(str, [ir_attachment])) + "])]"
+            myres["domain"] = (
+                "[('id','in',[" + ",".join(map(str, [ir_attachment])) + "])]"
+            )
             return myres
-        return self.env["report"].get_action(self, "ng_hr_payroll.payroll_register_report", data=datas)
+        return self.env["report"].get_action(
+            self, "ng_hr_payroll.payroll_register_report", data=datas
+        )
 
     def render_header(self, ws, fields, first_row=0):
         header_style = xlwt.easyxf("font: name Helvetica,bold on")

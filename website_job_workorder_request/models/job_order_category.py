@@ -5,4 +5,8 @@ class JobOrderCategory(models.Model):
     _name = "custom.job.order.category"
     _description = "Job Order Category"
 
-    name = fields.Char(string="Name", required=True, copy=False,)
+    name = fields.Char(
+        string="Name",
+        required=True,
+        copy=False,
+    )

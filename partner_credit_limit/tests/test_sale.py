@@ -9,5 +9,7 @@ class TestSaleTestCase(common.TransactionCase):
 
     def test_sale(self):
         self.respartner_obj = self.env["res.partner"]
-        self.partner = self.respartner_obj.create({"name": "Partner Name", "over_credit": True})
+        self.partner = self.respartner_obj.create(
+            {"name": "Partner Name", "over_credit": True}
+        )
         self.env["sale.order"].create({"partner_id": self.partner.id}).action_confirm()

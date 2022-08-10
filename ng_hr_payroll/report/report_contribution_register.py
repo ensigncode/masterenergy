@@ -34,18 +34,25 @@ class contribution_register_report(models.AbstractModel):
     def set_context(self, objects, data, ids, report_type=None):
         self.date_from = data["form"].get("date_from", time.strftime("%Y-%m-%d"))
         self.date_to = data["form"].get(
-            "date_to", str(datetime.now() + relativedelta.relativedelta(months=+1, day=1, days=-1))[:10]
+            "date_to",
+            str(
+                datetime.now() + relativedelta.relativedelta(months=+1, day=1, days=-1)
+            )[:10],
         )
         self.employee = data["form"].get("employee_ids", [])
         if not self.employee:
             self.employee = self.env["hr.employee"].search([])
-        return super(contribution_register_report, self).set_context(objects, data, ids, report_type=report_type)
+        return super(contribution_register_report, self).set_context(
+            objects, data, ids, report_type=report_type
+        )
 
     def sum_total(self):
         return self.regi_total
 
     def _get_objects(self):
-        return self.env["hr.contribution.register"].browse(self.localcontext["data"]["ids"])
+        return self.env["hr.contribution.register"].browse(
+            self.localcontext["data"]["ids"]
+        )
 
     def _get_payslip_lines(self, obj, data):
         payslip_obj = self.env["hr.payslip"]
@@ -93,7 +100,9 @@ class contribution_register_report(models.AbstractModel):
             "data": data,
             "company": self.env.user.company_id,
         }
-        return self.env["report"].render("ng_hr_payroll.contribution_register_mod_report", values=docargs)
+        return self.env["report"].render(
+            "ng_hr_payroll.contribution_register_mod_report", values=docargs
+        )
 
 
 # report_sxw.report_sxw('report.contribution.register.lines.employee', 'hr.contribution.register', 'ng_hr_payroll/report/report_contribution_register.rml', parser=contribution_register_report)

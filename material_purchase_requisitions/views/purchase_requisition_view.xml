@@ -8,16 +8,36 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="requisition_confirm" type="object" string="Confirm" states="draft" class="btn-primary" groups="base.group_user"/>
-                        <button name="manager_approve" type="object" string="Department Approve" states="dept_confirm,cancel" class="btn-primary" groups="material_purchase_requisitions.group_purchase_requisition_department"/>
-                        <button name="user_approve" type="object" string="Approve" states="ir_approve" class="btn-primary" groups="material_purchase_requisitions.group_purchase_requisition_user"/>
-                        <button name="request_stock" type="object" string="Create Picking and PO" states="approve" class="btn-primary" groups="material_purchase_requisitions.group_purchase_requisition_user"/>
+
+<!--                        <<<<<<<<<<<<<<<<<<<<<<Code by Hamza Ilyas Start>>>>>>>>>>>>>>>>>>>>>>-->
+
+                        <button string="Send to HOD" name="send_to_hod" type="object" class="oe_highlight"
+                                groups="maintenance_request_approvals.user_app" attrs="{'invisible': [('state', '!=', 'dept_confirm')]}"/>
+                        <button string="HOD" name="send_to_audit" type="object" class="oe_highlight"
+                                groups="maintenance_request_approvals.hod_app" attrs="{'invisible': [('state', '!=', 'hod')]}"/>
+                        <button string="Audit" name="send_to_pm" type="object" class="oe_highlight"
+                                groups="maintenance_request_approvals.audit_app" attrs="{'invisible': [('state', '!=', 'audit')]}"/>
+                        <button string="Plant Manager" name="send_to_ir" type="object" class="oe_highlight"
+                                groups="maintenance_request_approvals.pm_app" attrs="{'invisible': [('state', '!=', 'pm')]}"/>
+
+<!--                        <<<<<<<<<<<<<<<<<<<<<<Code by Hamza Ilyas Start>>>>>>>>>>>>>>>>>>>>>>-->
+
+                        <button name="requisition_confirm" type="object" string="Confirm" states="draft" class="btn-primary"
+                                groups="base.group_user"/>
+                        <button name="manager_approve" type="object" string="Department Approve" states="dept_confirm,cancel" class="btn-primary"
+                                groups="material_purchase_requisitions.group_purchase_requisition_department"/>
+                        <button name="user_approve" type="object" string="Approve" states="ir_approve" class="btn-primary"
+                                groups="material_purchase_requisitions.group_purchase_requisition_user"/>
+                        <button name="request_stock" type="object" string="Create Picking and PO" states="approve" class="btn-primary"
+                                groups="material_purchase_requisitions.group_purchase_requisition_user"/>
                         <button name="action_received" type="object" string="Received" states="stock" class="btn-primary"/>
-                        <button name="requisition_reject" type="object" string="Reject" groups="material_purchase_requisitions.group_purchase_requisition_department,material_purchase_requisitions.group_purchase_requisition_user" states="dept_confirm,approve,ir_approve" />
-                        <button name="action_cancel" type="object" states="draft" string="Cancel" groups="base.group_user"/>
+                        <button name="requisition_reject" type="object" string="Reject"
+                                groups="material_purchase_requisitions.group_purchase_requisition_department,material_purchase_requisitions.group_purchase_requisition_user" states="dept_confirm,approve,ir_approve" />
+                        <button name="action_cancel" type="object" states="draft" string="Cancel"
+                                groups="base.group_user"/>
                         <button name="reset_draft" type="object" string="Reset to Draft" states="cancel,reject,receive" class="btn-primary"/>
-                        <field name="state" widget="statusbar" string="confirm"  
-                                        statusbar_visible="draft,dept_confirm,ir_approve,approve,stock,receive"/>
+                        <field name="state" widget="statusbar" string="confirm"
+                                        statusbar_visible="draft,dept_confirm,hod,audit,pm,ir_approve,approve,stock,receive"/>
                     </header>
                     <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -67,7 +87,7 @@
                                 <group>
                                     <group>
                                             <field name="location_id"
-                                                   groups="material_purchase_requisitions.group_purchase_requisition_user,stock.group_stock_user" 
+                                                   groups="material_purchase_requisitions.group_purchase_requisition_user,stock.group_stock_user"
                                                    domain="[('usage','!=', 'view')]" attrs="{'readonly': [['state', 'in', ['reject','cancel','receive']]]}"/>
                                     </group>
                                     <group>

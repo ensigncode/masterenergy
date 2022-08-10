@@ -8,18 +8,42 @@ class MaterialPurchaseRequisitionLine(models.Model):
     _name = "material.purchase.requisition.line"
     _description = "Material Purchase Requisition Lines"
 
-    requisition_id = fields.Many2one("material.purchase.requisition", string="Requisitions",)
-    product_id = fields.Many2one("product.product", string="Product", required=True,)
+    requisition_id = fields.Many2one(
+        "material.purchase.requisition",
+        string="Requisitions",
+    )
+    product_id = fields.Many2one(
+        "product.product",
+        string="Product",
+        required=True,
+    )
     #     layout_category_id = fields.Many2one(
     #         'sale.layout_category',
     #         string='Section',
     #     )
-    description = fields.Char(string="Description", required=True,)
-    qty = fields.Float(string="Quantity", default=1, required=True,)
-    uom = fields.Many2one("uom.uom", string="Unit of Measure", required=True,)  # product.uom in odoo11
-    partner_id = fields.Many2many("res.partner", string="Vendors",)
+    description = fields.Char(
+        string="Description",
+        required=True,
+    )
+    qty = fields.Float(
+        string="Quantity",
+        default=1,
+        required=True,
+    )
+    uom = fields.Many2one(
+        "uom.uom",  # product.uom in odoo11
+        string="Unit of Measure",
+        required=True,
+    )
+    partner_id = fields.Many2many(
+        "res.partner",
+        string="Vendors",
+    )
     requisition_type = fields.Selection(
-        selection=[("internal", "Internal Picking"), ("purchase", "Purchase Order"),],
+        selection=[
+            ("internal", "Internal Picking"),
+            ("purchase", "Purchase Order"),
+        ],
         string="Requisition Action",
         default="purchase",
         required=True,

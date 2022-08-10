@@ -11,13 +11,22 @@ class contribution_register_employee(models.TransientModel):
     _description = "Contribution Registers by Employee"
 
     employee_ids = fields.Many2many(
-        "hr.employee", "emp_reg_rel", "employee_id", "wiz_id", string="Employees", required=True
+        "hr.employee",
+        "emp_reg_rel",
+        "employee_id",
+        "wiz_id",
+        string="Employees",
+        required=True,
     )
-    date_from = fields.Date(string="Date From", required=True, default=time.strftime("%Y-%m-01"))
+    date_from = fields.Date(
+        string="Date From", required=True, default=time.strftime("%Y-%m-01")
+    )
     date_to = fields.Date(
         string="Date To",
         required=True,
-        default=str(datetime.now() + relativedelta.relativedelta(months=+1, day=1, days=-1))[:10],
+        default=str(
+            datetime.now() + relativedelta.relativedelta(months=+1, day=1, days=-1)
+        )[:10],
     )
 
     def print_report(self):
@@ -27,4 +36,6 @@ class contribution_register_employee(models.TransientModel):
             "form": self.read()[0],
         }
 
-        return self.env["report"].get_action(self, "ng_hr_payroll.contribution_register_emp_report", data=datas)
+        return self.env["report"].get_action(
+            self, "ng_hr_payroll.contribution_register_emp_report", data=datas
+        )

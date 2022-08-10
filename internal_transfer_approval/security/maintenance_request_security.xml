@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="maintenance_request_rule_hod" model="ir.rule">
+            <field name="name">HOD user can only see request in hod state</field>
+            <field name="model_id" ref="model_maintenance_request"/>
+            <field name="domain_force">[('stage_id.name', '=', 'HOD')]</field>
+            <field name="groups" eval="[(4, ref('maintenance_request_approvals.hod_app'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="maintenance_request_rule_audit" model="ir.rule">
+            <field name="name">Audit user can only see request in audit state</field>
+            <field name="model_id" ref="model_maintenance_request"/>
+            <field name="domain_force">[('stage_id.name', '=', 'Audit')]</field>
+            <field name="groups" eval="[(4, ref('maintenance_request_approvals.audit_app'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="maintenance_request_rule_pm" model="ir.rule">
+            <field name="name">Plant manager can only see request in plant manager state</field>
+            <field name="model_id" ref="model_maintenance_request"/>
+            <field name="domain_force">[('stage_id.name', '=', 'Plant Manager')]</field>
+            <field name="groups" eval="[(4, ref('maintenance_request_approvals.pm_app'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="maintenance_request_rule_man" model="ir.rule">
+            <field name="name">Maintenance Officer user can only see request in his state</field>
+            <field name="model_id" ref="model_maintenance_request"/>
+            <field name="domain_force">[('stage_id.name', 'in', ['Maintenance Officer', 'In Progress', 'Repaired'])]</field>
+            <field name="groups" eval="[(4, ref('maintenance_request_approvals.man_app'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="maintenance_request_rule_store" model="ir.rule">
+            <field name="name">Store Officer can only see request in Store Officer state</field>
+            <field name="model_id" ref="model_maintenance_request"/>
+            <field name="domain_force">[('stage_id.name', '=', 'Store Officer')]</field>
+            <field name="groups" eval="[(4, ref('maintenance_request_approvals.store_app'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="maintenance_request_rule_user" model="ir.rule">
+            <field name="name">User can only see request in new and repaired state</field>
+            <field name="model_id" ref="model_maintenance_request"/>
+            <field name="domain_force">[('stage_id.name', 'in', ['New Request', 'Repaired'])]</field>
+            <field name="groups" eval="[(4, ref('maintenance_request_approvals.user_app'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+    </data>
+</odoo>

@@ -168,7 +168,9 @@ class report_hr_salary_employee_year(models.AbstractModel):
             "data": data,
             "company": self.env.user.company_id,
         }
-        return self.env["report"].render("ng_hr_payroll.yearly_salary_ng_report", values=docargs)
+        return self.env["report"].render(
+            "ng_hr_payroll.yearly_salary_ng_report", values=docargs
+        )
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

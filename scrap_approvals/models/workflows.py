@@ -108,9 +108,13 @@ class StockPickingInherit(models.Model):
     def action_confirm(self):
         print("action_confirm Called XXXXXXXXXXXXXX")
         self._check_company()
-        self.mapped("package_level_ids").filtered(lambda pl: pl.state == "draft" and not pl.move_ids)._generate_moves()
+        self.mapped("package_level_ids").filtered(
+            lambda pl: pl.state == "draft" and not pl.move_ids
+        )._generate_moves()
         # call `_action_confirm` on every draft move
-        self.mapped("move_lines").filtered(lambda move: move.state == "draft")._action_confirm()
+        self.mapped("move_lines").filtered(
+            lambda move: move.state == "draft"
+        )._action_confirm()
 
         # run scheduler for moves forecasted to not have enough in stock
         self.mapped("move_lines").filtered(
@@ -125,7 +129,9 @@ class StockPickingInherit(models.Model):
             if self.env.user.company_id.email_id_custom:
                 template = self.env.user.company_id.email_id_custom
                 template.email_to = email
-                self.env["mail.template"].browse(template.id).send_mail(self.id, force_send=True)
+                self.env["mail.template"].browse(template.id).send_mail(
+                    self.id, force_send=True
+                )
                 print("Email Sent")
         #     else:
         #         raise UserError("No Email Template selected for Approval Notification")

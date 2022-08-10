@@ -103,7 +103,9 @@ class contract_history(models.Model):
     revision_date = fields.Datetime(string="Date")
     contract_id = fields.Many2one("hr.contract", string="Contract")
     increment_id = fields.Many2one("salary.increment", string="Increment")
-    wage = fields.Float(string="Wage", digits=(16, 2), help="Basic Salary of the employee")
+    wage = fields.Float(
+        string="Wage", digits=(16, 2), help="Basic Salary of the employee"
+    )
     employee_id = fields.Many2one("hr.employee", string="Employee")
     struct_id = fields.Many2one("hr.payroll.structure", string="Salary Structure")
 
@@ -159,8 +161,18 @@ class salary_increment(models.Model):
         # OR if it starts between the given dates
         clause_2 = ["&", ("date_start", "<=", date_to), ("date_start", ">=", date_from)]
         # OR if it starts before the date_from and finish after the date_end (or never finish)
-        clause_3 = [("date_start", "<=", date_from), "|", ("date_end", "=", False), ("date_end", ">=", date_to)]
-        clause_final = [("employee_id", "=", employee.id), "|", "|"] + clause_1 + clause_2 + clause_3
+        clause_3 = [
+            ("date_start", "<=", date_from),
+            "|",
+            ("date_end", "=", False),
+            ("date_end", ">=", date_to),
+        ]
+        clause_final = (
+            [("employee_id", "=", employee.id), "|", "|"]
+            + clause_1
+            + clause_2
+            + clause_3
+        )
         contract_ids = contract_obj.search(clause_final)
         return contract_ids
 
@@ -169,7 +181,11 @@ class salary_increment(models.Model):
         contract_obj = self.env["hr.contract"]
 
         # defaults
-        res = {"value": {"contract_id": False,}}
+        res = {
+            "value": {
+                "contract_id": False,
+            }
+        }
         if (not employee_id) or (not date_from) or (not date_to):
             return res
         employee_id = empolyee_obj.browse(employee_id)
@@ -179,7 +195,10 @@ class salary_increment(models.Model):
             res["value"].update({"category_id": False})
 
         res["value"].update(
-            {"company_id": employee_id.company_id.id, "manager_id": employee_id.parent_id.id,}
+            {
+                "company_id": employee_id.company_id.id,
+                "manager_id": employee_id.parent_id.id,
+            }
         )
 
         contract_ids = self.get_contract(employee_id, date_from, date_to)
@@ -188,10 +207,20 @@ class salary_increment(models.Model):
         if contract_id:
             #            contract = contract_obj.browse(contract_id)
             wage = contract_id.wage
-        res["value"].update({"contract_id": contract_ids and contract_ids.id or False, "old_salary": wage or 0.0})
+        res["value"].update(
+            {
+                "contract_id": contract_ids and contract_ids.id or False,
+                "old_salary": wage or 0.0,
+            }
+        )
         return res
 
-    name = fields.Char(string="Name", required=True, readonly=False, states={"validate": [("readonly", True)]})
+    name = fields.Char(
+        string="Name",
+        required=True,
+        readonly=False,
+        states={"validate": [("readonly", True)]},
+    )
     state = fields.Selection(
         selection=[
             ("draft", "New"),
@@ -216,10 +245,16 @@ class salary_increment(models.Model):
         default=lambda self: self.env.user,
     )
     date_from = fields.Datetime(
-        string="Create Date", states={"validate": [("readonly", True)]}, default=time.strftime("%Y-%m-01")
+        string="Create Date",
+        states={"validate": [("readonly", True)]},
+        default=time.strftime("%Y-%m-01"),
     )
     date_to = fields.Datetime(string="Approved Date", readonly=True)
-    last_date = fields.Datetime(string="Last Increment Date", readonly=False, states={"validate": [("readonly", True)]})
+    last_date = fields.Datetime(
+        string="Last Increment Date",
+        readonly=False,
+        states={"validate": [("readonly", True)]},
+    )
     employee_id = fields.Many2one(
         "hr.employee",
         string="Employee",
@@ -237,7 +272,9 @@ class salary_increment(models.Model):
         states={"validate": [("readonly", True)]},
         help="This area is automatically filled by the user who will approve the request",
     )
-    notes = fields.Text(string="Notes", readonly=False, states={"validate": [("readonly", True)]})
+    notes = fields.Text(
+        string="Notes", readonly=False, states={"validate": [("readonly", True)]}
+    )
     #    case_id = fields.Many2one('crm.meeting', string='Meeting', help='Related Meeting for Increment', readonly=False, states={'validate':[('readonly', True)]})
     case_id = fields.Char("Meeting")
     department_id = fields.Many2one(
@@ -254,9 +291,13 @@ class salary_increment(models.Model):
         readonly=False,
         states={"validate": [("readonly", True)]},
     )
-    contract_id = fields.Many2one("hr.contract", "Contract", states={"validate": [("readonly", True)]}, index=True)
+    contract_id = fields.Many2one(
+        "hr.contract", "Contract", states={"validate": [("readonly", True)]}, index=True
+    )
     old_salary = fields.Float(
-        string="Current Wage", states={"validate": [("readonly", True)]}, help="Basic Pay of employee"
+        string="Current Wage",
+        states={"validate": [("readonly", True)]},
+        help="Basic Pay of employee",
     )
     expected_salary = fields.Float(
         string="Expected Wage",
@@ -276,12 +317,16 @@ class salary_increment(models.Model):
         required=False,
         readonly=False,
         states={"validate": [("readonly", True)]},
-        default=lambda self: self.env["res.company"]._company_default_get("salary.increment"),
+        default=lambda self: self.env["res.company"]._company_default_get(
+            "salary.increment"
+        ),
     )
 
     def set_to_draft(self):
         self.write({"state": "draft", "date_to": False, "new_salary": 0.0})
-        history_ids = self.env["contract.history"].search([("increment_id", "=", self.id)])
+        history_ids = self.env["contract.history"].search(
+            [("increment_id", "=", self.id)]
+        )
         history_ids.unlink()
         self.contract_id.write({"wage": self.old_salary})
         self.delete_workflow()
@@ -312,7 +357,13 @@ class salary_increment(models.Model):
             }
             self.env["contract.history"].create(vals)
             sal.contract_id.write({"wage": sal.new_salary})
-        return self.write({"state": "validate", "manager_id": manager.id, "date_to": time.strftime("%Y-%m-%d")})
+        return self.write(
+            {
+                "state": "validate",
+                "manager_id": manager.id,
+                "date_to": time.strftime("%Y-%m-%d"),
+            }
+        )
 
     def salary_confirm(self):
         for sal in self:

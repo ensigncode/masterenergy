@@ -29,8 +29,14 @@ class payslip_report(models.AbstractModel):
     _auto = False
 
     name = fields.Char(string="Name", readonly=True)
-    date_from = fields.Date(string="Date From", readonly=True,)
-    date_to = fields.Date(string="Date To", readonly=True,)
+    date_from = fields.Date(
+        string="Date From",
+        readonly=True,
+    )
+    date_to = fields.Date(
+        string="Date To",
+        readonly=True,
+    )
     year = fields.Char(string="Year", readonly=True)
     month = fields.Selection(
         selection=[
@@ -52,16 +58,26 @@ class payslip_report(models.AbstractModel):
     )
     day = fields.Char(string="Day", readonly=True)
     state = fields.Selection(
-        selection=[("draft", "Draft"), ("done", "Done"), ("cancel", "Rejected"),], string="State", readonly=True
+        selection=[
+            ("draft", "Draft"),
+            ("done", "Done"),
+            ("cancel", "Rejected"),
+        ],
+        string="State",
+        readonly=True,
     )
     employee_id = fields.Many2one("hr.employee", string="Employee", readonly=True)
     nbr = fields.Integer(string="# Payslip lines", readonly=True)
     number = fields.Char(string="Number", readonly=True)
-    struct_id = fields.Many2one("hr.payroll.structure", string="Structure", readonly=True)
+    struct_id = fields.Many2one(
+        "hr.payroll.structure", string="Structure", readonly=True
+    )
     company_id = fields.Many2one("res.company", string="Company", readonly=True)
     paid = fields.Boolean(string="Made Payment Order ? ", readonly=True)
     total = fields.Float(string="Total", readonly=True)
-    category_id = fields.Many2one("hr.salary.rule.category", string="Category", readonly=True)
+    category_id = fields.Many2one(
+        "hr.salary.rule.category", string="Category", readonly=True
+    )
 
     def init(self):
         tools.drop_view_if_exists(self._cr, "payslip_report")

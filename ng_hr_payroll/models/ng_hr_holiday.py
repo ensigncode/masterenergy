@@ -15,10 +15,15 @@ class hr_holidays(models.Model):
         help="This field is when you carry forward leaves legal leaves need to set zero for that we need to create leave request for that to set it zero..",
         default=False,
     )
-    carry_fw_allocation = fields.Boolean(string="Is Carry Forwarded?", default=False)  # see help in xml file .
+    carry_fw_allocation = fields.Boolean(
+        string="Is Carry Forwarded?", default=False
+    )  # see help in xml file .
 
     policy = fields.Selection(
-        selection=[("earned", "Deduct From Earned Leaves"), ("payslip", "Deduct From Salary")],
+        selection=[
+            ("earned", "Deduct From Earned Leaves"),
+            ("payslip", "Deduct From Salary"),
+        ],
         string="Leave Deduction",
         required=True,
         readonly=True,

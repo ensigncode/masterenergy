@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data noupdate="1">
+        <record id="new_maintenance_stage_2" model="maintenance.stage">
+            <field name="name">HOD</field>
+        </record>
+        <record id="new_maintenance_stage_3" model="maintenance.stage">
+            <field name="name">Audit</field>
+        </record>
+        <record id="new_maintenance_stages_4" model="maintenance.stage">
+            <field name="name">Plant Manager</field>
+        </record>
+        <record id="new_maintenance_stages_5" model="maintenance.stage">
+            <field name="name">Maintenance Officer</field>
+        </record>
+        <record id="new_maintenance_stages_6" model="maintenance.stage">
+            <field name="name">Store Officer</field>
+        </record>
+        <record id="new_maintenance_stages_7" model="maintenance.stage">
+            <field name="name">Completed</field>
+        </record>
+        <record id="new_maintenance_stages_8" model="maintenance.stage">
+            <field name="name">Rejected</field>
+        </record>
+    </data>
+</odoo>

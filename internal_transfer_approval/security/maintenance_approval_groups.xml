@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.module.category" id="module_maintenance_group">
+            <field name="name">Maintenance Approval Rights</field>
+            <field name="description">Maintenance Approval Rights</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="user_app" model="res.groups">
+            <field name="name">User</field>
+            <field name="category_id" ref="module_maintenance_group"/>
+        </record>
+
+        <record id="hod_app" model="res.groups">
+            <field name="name">HOD</field>
+            <field name="category_id" ref="module_maintenance_group"/>
+        </record>
+
+        <record id="audit_app" model="res.groups">
+            <field name="name">Audit</field>
+            <field name="category_id" ref="module_maintenance_group"/>
+        </record>
+
+        <record id="pm_app" model="res.groups">
+            <field name="name">Plant Manager</field>
+            <field name="category_id" ref="module_maintenance_group"/>
+        </record>
+
+        <record id="man_app" model="res.groups">
+            <field name="name">Maintenance Officer</field>
+            <field name="category_id" ref="module_maintenance_group"/>
+        </record>
+
+        <record id="store_app" model="res.groups">
+            <field name="name">Store Officer</field>
+            <field name="category_id" ref="module_maintenance_group"/>
+        </record>
+
+    </data>
+    
+</odoo>

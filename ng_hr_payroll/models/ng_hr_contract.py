@@ -22,7 +22,9 @@ class hr_contract(models.Model):
         required=True,
     )
     pension_employee = fields.Float(
-        string="CTCS Deduction (amount)", help="Employee Contribution for Pension in % between 0-100.", default=0
+        string="CTCS Deduction (amount)",
+        help="Employee Contribution for Pension in % between 0-100.",
+        default=0,
     )
     hra = fields.Float(
         string="House Rent Allowance (%)",

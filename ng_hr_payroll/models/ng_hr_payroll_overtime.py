@@ -27,9 +27,15 @@ class hr_overtime(models.Model):
 
     _inherit = ["mail.thread"]
 
-    name = fields.Char(string="Description", required=True, states={"validate": [("readonly", True)]})
-    number_of_hours = fields.Float(string="Number of Hours", states={"validate": [("readonly", True)]})
-    number_of_days = fields.Float(string="Number of Days", states={"validate": [("readonly", True)]})
+    name = fields.Char(
+        string="Description", required=True, states={"validate": [("readonly", True)]}
+    )
+    number_of_hours = fields.Float(
+        string="Number of Hours", states={"validate": [("readonly", True)]}
+    )
+    number_of_days = fields.Float(
+        string="Number of Days", states={"validate": [("readonly", True)]}
+    )
     include_payroll = fields.Boolean(
         string="Include in Payroll",
         states={"validate": [("readonly", True)]},
@@ -53,12 +59,20 @@ class hr_overtime(models.Model):
         default="draft",
     )
     user_id = fields.Many2one(
-        related="employee_id.user_id", string="User", store=True, default=lambda self: self.env.user
+        related="employee_id.user_id",
+        string="User",
+        store=True,
+        default=lambda self: self.env.user,
     )
     date_from = fields.Datetime(
-        string="Start Date", readonly=False, states={"validate": [("readonly", True)]}, default=fields.datetime.now()
+        string="Start Date",
+        readonly=False,
+        states={"validate": [("readonly", True)]},
+        default=fields.datetime.now(),
     )
-    date_to = fields.Datetime(string="End Date", readonly=False, states={"validate": [("readonly", True)]})
+    date_to = fields.Datetime(
+        string="End Date", readonly=False, states={"validate": [("readonly", True)]}
+    )
     approve_date = fields.Datetime(string="Approved Date", readonly=True)
     employee_id = fields.Many2one(
         "hr.employee",
@@ -75,7 +89,9 @@ class hr_overtime(models.Model):
         states={"validate": [("readonly", True)]},
         help="This area is automatically filled by the user who will approve the request",
     )
-    notes = fields.Text(string="Notes",)
+    notes = fields.Text(
+        string="Notes",
+    )
     department_id = fields.Many2one(
         related="employee_id.department_id",
         string="Department",
@@ -92,7 +108,11 @@ class hr_overtime(models.Model):
         help="Category of Employee",
     )
     company_id = fields.Many2one(
-        "res.company", string="Company", required=True, readonly=False, states={"validate": [("readonly", True)]}
+        "res.company",
+        string="Company",
+        required=True,
+        readonly=False,
+        states={"validate": [("readonly", True)]},
     )
 
     def set_to_draft(self):
@@ -132,7 +152,13 @@ class hr_overtime(models.Model):
         obj_emp = self.env["hr.employee"]
         ids2 = obj_emp.search([("user_id", "=", self._uid)], limit=1)
         manager = ids2 or False
-        return self.write({"state": "validate", "manager_id": manager.id, "approve_date": time.strftime("%Y-%m-%d")})
+        return self.write(
+            {
+                "state": "validate",
+                "manager_id": manager.id,
+                "approve_date": time.strftime("%Y-%m-%d"),
+            }
+        )
 
     def ot_confirm(self):
         return self.write({"state": "confirm"})

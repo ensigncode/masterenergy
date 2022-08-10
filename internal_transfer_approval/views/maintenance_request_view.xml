@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="maintenance_approvals_view_form" model="ir.ui.view">
+            <field name="name">maintenance.approval.form</field>
+            <field name="model">maintenance.request</field>
+            <field name="inherit_id" ref="asset_mro_maintenance_management.asset_mro_maintenance_request_materila"/>
+            <field name="arch" type="xml">
+                <xpath expr = "//header/button[@name='create_task']" position="before">
+                    <button string="Send to HOD" name="send_to_hod" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.user_app" attrs="{'invisible': [('current_stage', '!=', 'new')]}"/>
+                    <button string="HOD" name="send_to_audit" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.hod_app" attrs="{'invisible': [('current_stage', '!=', 'hod')]}"/>
+                    <button string="Audit" name="send_to_pm" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.audit_app" attrs="{'invisible': [('current_stage', '!=', 'audit')]}"/>
+                    <button string="Plant Manager" name="send_to_mo" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.pm_app" attrs="{'invisible': [('current_stage', '!=', 'pm')]}"/>
+                    <button string="Start Work" name="start_work" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.man_app" attrs="{'invisible': [('current_stage', '!=', 'mo')]}"/>
+                    <button string="Done Work" name="done_work" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.man_app" attrs="{'invisible': [('current_stage', '!=', 'ip')]}"/>
+                    <button string="Reject" name="reject_hod" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.hod_app" attrs="{'invisible': [('current_stage', '!=', 'hod')]}"/>
+                    <button string="Reject" name="reject_audit" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.audit_app" attrs="{'invisible': [('current_stage', '!=', 'audit')]}"/>
+                    <button string="Reject" name="reject_pm" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.pm_app" attrs="{'invisible': [('current_stage', '!=', 'pm')]}"/>
+<!--                    <button string="Back to Maintenance" name="send_to_mo" type="object" class="oe_highlight"-->
+<!--                            groups="maintenance_request_approvals.man_app,maintenance_request_approvals.user_app"-->
+<!--                            attrs="{'invisible': [('current_stage', '!=', 'scrap')]}"/>-->
+<!--                    <button string="Move to Scrap" name="send_to_scrap" type="object" class="oe_highlight"-->
+<!--                            groups="maintenance_request_approvals.man_app" attrs="{'invisible': [('current_stage', 'not in', ['mo', 'ip'])]}"/>-->
+                    <button string="Complete" name="send_to_done" type="object" class="oe_highlight"
+                            groups="maintenance_request_approvals.user_app" attrs="{'invisible': [('current_stage', '!=', 'repaired')]}"/>
+                </xpath>
+                <xpath expr = "//header/button[@name='create_task']" position="attributes">
+                    <attribute name="groups">maintenance_request_approvals.man_app</attribute>
+                    <attribute name="attrs">{'invisible': [('current_stage', '=', 'repaired')]}</attribute>
+                </xpath>
+                <xpath expr = "//header/button[@name='create_purchase_requisition']" position="attributes">
+                    <attribute name="groups">maintenance_request_approvals.man_app</attribute>
+                    <attribute name="attrs">{'invisible': [('current_stage', '=', 'repaired')]}</attribute>
+                </xpath>
+                <xpath expr = "//header/field[@name='stage_id']" position="after">
+                    <field name="current_stage" invisible="1"/>
+                </xpath>
+                <xpath expr = "//header/field[@name='stage_id']" position="attributes">
+                    <attribute name="options">{'clickable': False}</attribute>
+                </xpath>
+            </field>
+         </record>
+
+        <record id="maintenance_approvals_view_kanban" model="ir.ui.view">
+            <field name="name">maintenance.approval.kanban</field>
+            <field name="model">maintenance.request</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_request_view_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr = "//kanban" position="attributes">
+                    <attribute name="records_draggable">false</attribute>
+                </xpath>
+            </field>
+         </record>
+
+     </data>
+ </odoo>

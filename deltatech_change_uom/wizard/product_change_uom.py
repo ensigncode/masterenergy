@@ -24,7 +24,11 @@ class ProductChangeUoM(models.TransientModel):
 
     @api.onchange("uom_po_id")
     def _onchange_uom(self):
-        if self.uom_id and self.uom_po_id and self.uom_id.category_id != self.uom_po_id.category_id:
+        if (
+            self.uom_id
+            and self.uom_po_id
+            and self.uom_id.category_id != self.uom_po_id.category_id
+        ):
             self.uom_po_id = self.uom_id
 
     @api.model
@@ -45,10 +49,13 @@ class ProductChangeUoM(models.TransientModel):
             products = self.env["product.template"].browse(active_ids)
             for product in products:
                 variants = product.product_variant_ids
-                po_uoms = list(map(lambda x:x.uom_po_id.id,variants))
-                uoms = list(map(lambda x:x.uom_id.id,variants))
-            # inlocuire in comanda de achizitie
-                domain = [("product_id", "in", variants.ids), ("product_uom", "in", po_uoms)]
+                po_uoms = list(map(lambda x: x.uom_po_id.id, variants))
+                uoms = list(map(lambda x: x.uom_id.id, variants))
+                # inlocuire in comanda de achizitie
+                domain = [
+                    ("product_id", "in", variants.ids),
+                    ("product_uom", "in", po_uoms),
+                ]
                 purchase_lines = self.env["purchase.order.line"].search(domain)
                 if purchase_lines:
                     query_dic = {
@@ -58,8 +65,11 @@ class ProductChangeUoM(models.TransientModel):
                     query = "UPDATE purchase_order_line SET product_uom = %(product_uom)s WHERE id in %(ids)s"
                     self._cr.execute(query, query_dic)
 
-            # inlocuire in comanda de vanzare
-                domain = [("product_id", "in", variants.ids), ("product_uom", "in", uoms)]
+                # inlocuire in comanda de vanzare
+                domain = [
+                    ("product_id", "in", variants.ids),
+                    ("product_uom", "in", uoms),
+                ]
                 sal_order_lines = self.env["sale.order.line"].search(domain)
                 if sal_order_lines:
                     query_dic = {
@@ -70,7 +80,10 @@ class ProductChangeUoM(models.TransientModel):
                     self._cr.execute(query, query_dic)
 
                 # inlocuire in facturi
-                domain = [("product_id", "in", variants.ids), ("product_uom_id", "in", uoms)]
+                domain = [
+                    ("product_id", "in", variants.ids),
+                    ("product_uom_id", "in", uoms),
+                ]
                 account_lines = self.env["account.move.line"].search(domain)
                 if account_lines:
                     query_dic = {
@@ -81,7 +94,10 @@ class ProductChangeUoM(models.TransientModel):
                     self._cr.execute(query, query_dic)
 
                 # inlocuire in miscari de stoc
-                domain = [("product_id", "in", variants.ids), ("product_uom", "in", uoms)]
+                domain = [
+                    ("product_id", "in", variants.ids),
+                    ("product_uom", "in", uoms),
+                ]
                 stock_moves = self.env["stock.move"].search(domain)
                 if stock_moves:
                     query_dic = {
@@ -92,7 +108,10 @@ class ProductChangeUoM(models.TransientModel):
                     self._cr.execute(query, query_dic)
 
                 # inlocuire in miscari de stoc
-                domain = [("product_id", "in", variants.ids), ("product_uom_id", "in", uoms)]
+                domain = [
+                    ("product_id", "in", variants.ids),
+                    ("product_uom_id", "in", uoms),
+                ]
                 stock_move_lines = self.env["stock.move.line"].search(domain)
                 if stock_move_lines:
                     query_dic = {
@@ -102,6 +121,10 @@ class ProductChangeUoM(models.TransientModel):
                     query = "UPDATE stock_move_line SET product_uom_id = %(product_uom_id)s WHERE id in %(ids)s"
                     self._cr.execute(query, query_dic)
 
-                query_dic = {"id": product.id, "uom_id": self.uom_id.id, "uom_po_id": self.uom_po_id.id}
+                query_dic = {
+                    "id": product.id,
+                    "uom_id": self.uom_id.id,
+                    "uom_po_id": self.uom_po_id.id,
+                }
                 query = "UPDATE product_template SET uom_id = %(uom_id)s, uom_po_id=%(uom_po_id)s  WHERE id = %(id)s"
                 self._cr.execute(query, query_dic)

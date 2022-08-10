@@ -94,7 +94,11 @@ Email notifications to Department Manager, Requisition Manager for approval.
     #'live_test_url': 'https://youtu.be/1AgKs7gfe4M',
     "live_test_url": "http://probuseappdemo.com/probuse_apps/material_purchase_requisitions/304",  #'https://youtu.be/byR2cM0c274',
     "category": "Warehouse",
-    "depends": ["stock", "hr", "purchase",],
+    "depends": [
+        "stock",
+        "hr",
+        "purchase",
+    ],
     "data": [
         "security/security.xml",
         "security/multi_company_security.xml",

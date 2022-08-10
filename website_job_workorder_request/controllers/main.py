@@ -13,10 +13,14 @@ class website_account(website_account):
         values = super(website_account, self)._prepare_portal_layout_values()
         partner = request.env.user.partner_id
         custom_wo_joborder_count = (
-            request.env["project.task"].sudo().search_count([("custom_wo_job_partner_id", "=", partner.id)])
+            request.env["project.task"]
+            .sudo()
+            .search_count([("custom_wo_job_partner_id", "=", partner.id)])
         )
         values.update(
-            {"custom_wo_joborder_count": custom_wo_joborder_count,}
+            {
+                "custom_wo_joborder_count": custom_wo_joborder_count,
+            }
         )
         return values
 
@@ -24,10 +28,14 @@ class website_account(website_account):
         values = super()._prepare_home_portal_values(counters)
         partner = request.env.user.partner_id
         custom_wo_joborder_count = (
-            request.env["project.task"].sudo().search_count([("custom_wo_job_partner_id", "=", partner.id)])
+            request.env["project.task"]
+            .sudo()
+            .search_count([("custom_wo_job_partner_id", "=", partner.id)])
         )
         values.update(
-            {"custom_wo_joborder_count": custom_wo_joborder_count,}
+            {
+                "custom_wo_joborder_count": custom_wo_joborder_count,
+            }
         )
         return values
 
@@ -37,11 +45,15 @@ class website_account(website_account):
             "custom_job_order_category_ids": job_order_category_ids,
         }
 
-    @http.route(["/page/custom_wo_job_workorder"], type="http", auth="public", website=True)
+    @http.route(
+        ["/page/custom_wo_job_workorder"], type="http", auth="public", website=True
+    )
     def custom_wo_show_joborder(self, **post):
         # return request.render("job_workorder_website_request.job_workorder")
         values = self._prepare_custom_job_workorder_values(post)
-        return request.render("website_job_workorder_request.custom_wo_job_order", values)
+        return request.render(
+            "website_job_workorder_request.custom_wo_job_order", values
+        )
 
     @http.route(
         ["/custom_wo_job_order/custom_wo_website_joborder_submitted"],
@@ -66,10 +78,20 @@ class website_account(website_account):
         if post.get("custom_wo_job_category") != "Select category":
             vale.update({"custom_wo_job_category": post.get("custom_wo_job_category")})
         if post.get("custom_wo_job_category_id"):
-            vale.update({"custom_wo_job_category_id": int(post.get("custom_wo_job_category_id"))})
+            vale.update(
+                {
+                    "custom_wo_job_category_id": int(
+                        post.get("custom_wo_job_category_id")
+                    )
+                }
+            )
         #        partner_id = request.env['res.partner'].sudo().search([('email', '=', post.get('email'))]) odoo13
         if request.env.user.has_group("base.group_public"):
-            custom_partner_id = request.env["res.partner"].sudo().search([("email", "=", post.get("email"))], limit=1)
+            custom_partner_id = (
+                request.env["res.partner"]
+                .sudo()
+                .search([("email", "=", post.get("email"))], limit=1)
+            )
             if custom_partner_id:
                 partner_id = custom_partner_id.id
             else:
@@ -78,15 +100,21 @@ class website_account(website_account):
             partner_id = request.env.user.partner_id.id
         if partner_id:
             vale.update(
-                {"custom_wo_job_partner_id": partner_id,}
+                {
+                    "custom_wo_job_partner_id": partner_id,
+                }
             )
         #        project_id = request.env['project.project'].sudo().search([('code', '=', post.get('project_code'))], limit=1)
         project_id = (
-            request.env["project.project"].sudo().search([("custome_code", "=", post.get("project_code"))], limit=1)
+            request.env["project.project"]
+            .sudo()
+            .search([("custome_code", "=", post.get("project_code"))], limit=1)
         )
         if project_id:
             vale.update(
-                {"project_id": project_id.id,}
+                {
+                    "project_id": project_id.id,
+                }
             )
         workorder_id = request.env["project.task"].sudo().create(vale)
         local_context = http.request.env.context.copy()
@@ -121,20 +149,31 @@ class website_account(website_account):
                     attachment_obj = http.request.env["ir.attachment"]
                     attach = attachment_obj.sudo().create(attachments)
         if len(attachment_list) > 0:
-            group_msg = _("Customer has sent %s attachments to this joborder. Name of attachments are: ") % (
-                len(attachment_list)
-            )
+            group_msg = _(
+                "Customer has sent %s attachments to this joborder. Name of attachments are: "
+            ) % (len(attachment_list))
             for attach in attachment_list:
                 group_msg = group_msg + "\n" + attach.filename
-            group_msg = group_msg + "\n" + ". You can see top attachment menu to download attachments."
+            group_msg = (
+                group_msg
+                + "\n"
+                + ". You can see top attachment menu to download attachments."
+            )
             workorder_id.sudo().message_post(body=group_msg, message_type="comment")
         values = {"order": workorder_id}
-        return request.render("website_job_workorder_request.custom_wo_website_thanks_mail_send", values)
+        return request.render(
+            "website_job_workorder_request.custom_wo_website_thanks_mail_send", values
+        )
 
     @http.route(
-        ["/my/custom_wo_joborders", "/my/custom_wo_joborders/page/<int:page>"], type="http", auth="user", website=True
+        ["/my/custom_wo_joborders", "/my/custom_wo_joborders/page/<int:page>"],
+        type="http",
+        auth="user",
+        website=True,
     )
-    def custom_wo_my_joborders(self, page=1, date_begin=None, date_end=None, joborder=None, sortby=None, **kw):
+    def custom_wo_my_joborders(
+        self, page=1, date_begin=None, date_end=None, joborder=None, sortby=None, **kw
+    ):
         values = self._prepare_portal_layout_values()
         partner = request.env.user.partner_id
 
@@ -147,7 +186,9 @@ class website_account(website_account):
         )
         domain = [("custom_wo_job_partner_id", "=", partner.id)]
         custom_wo_job_order_ids = (
-            request.env["project.task"].sudo().search(domain, limit=self._items_per_page, offset=pager["offset"])
+            request.env["project.task"]
+            .sudo()
+            .search(domain, limit=self._items_per_page, offset=pager["offset"])
         )
         values.update(
             {
@@ -161,9 +202,16 @@ class website_account(website_account):
             }
         )
         # return request.render("job_workorder_website_request.my_portal_job_order", values)
-        return request.render("website_job_workorder_request.custom_wo_my_portal_job_order", values)
+        return request.render(
+            "website_job_workorder_request.custom_wo_my_portal_job_order", values
+        )
 
-    @http.route(["/my/custom_wo_joborder/<int:custom_wo_joborder>"], type="http", auth="user", website=True)
+    @http.route(
+        ["/my/custom_wo_joborder/<int:custom_wo_joborder>"],
+        type="http",
+        auth="user",
+        website=True,
+    )
     def custom_wo_joborder_print(self, custom_wo_joborder, access_token=None, **kw):
         # if request.env['res.users'].browse(request.session.uid).user_has_groups('odoo_portal_payslip_employee.group_employee_payslip'):
         # print report as sudo, since it require access to taxes, payment term, ... and portal

@@ -21,7 +21,9 @@ class HRDepartment(models.Model):
 
     _inherit = "hr.department"
 
-    location_id = fields.Many2one(comodel_name="stock.location", string="Stock Location")
+    location_id = fields.Many2one(
+        comodel_name="stock.location", string="Stock Location"
+    )
 
 
 class IRRequest(models.Model):
@@ -37,35 +39,66 @@ class IRRequest(models.Model):
 
     def _current_login_employee(self):
         """Get the employee record related to the current login user."""
-        hr_employee = self.env["hr.employee"].search([("user_id", "=", self._current_login_user())], limit=1)
+        hr_employee = self.env["hr.employee"].search(
+            [("user_id", "=", self._current_login_user())], limit=1
+        )
         return hr_employee.id
 
     name = fields.Char(string="Reference", default="/")
     state = fields.Selection(selection=STATES, default="draft", tracking=True)
-    requester = fields.Many2one(comodel_name="res.users", string="User", default=_current_login_user, tracking=True)
+    requester = fields.Many2one(
+        comodel_name="res.users",
+        string="User",
+        default=_current_login_user,
+        tracking=True,
+    )
     end_user = fields.Many2one(
-        comodel_name="hr.employee", string="Employee", default=_current_login_employee, required=True
+        comodel_name="hr.employee",
+        string="Employee",
+        default=_current_login_employee,
+        required=True,
     )
     request_date = fields.Date(
-        string="Request Date", default=lambda self: fields.Date.today(), help="The day in which request was initiated"
+        string="Request Date",
+        default=lambda self: fields.Date.today(),
+        help="The day in which request was initiated",
     )
     request_deadline = fields.Date(string="Deadline")
-    hod = fields.Many2one(comodel_name="hr.employee", related="end_user.parent_id", string="Manager")
-    department = fields.Many2one(comodel_name="hr.department", related="end_user.department_id", string="Department")
+    hod = fields.Many2one(
+        comodel_name="hr.employee", related="end_user.parent_id", string="Manager"
+    )
+    department = fields.Many2one(
+        comodel_name="hr.department",
+        related="end_user.department_id",
+        string="Department",
+    )
     request_type = fields.Selection(
-        selection=[("purchase", "Purchase"), ("sale", "Sale")], string="Request Type", required=True
+        selection=[("purchase", "Purchase"), ("sale", "Sale")],
+        string="Request Type",
+        required=True,
     )
     dst_location_id = fields.Many2one(
-        comodel_name="stock.location", string="Destination Location", help="Departmental Stock Location", tracking=True,
+        comodel_name="stock.location",
+        string="Destination Location",
+        help="Departmental Stock Location",
+        tracking=True,
     )
     src_location_id = fields.Many2one(
-        comodel_name="stock.location", string="Source Location", help="Departmental Stock Location", tracking=True,
+        comodel_name="stock.location",
+        string="Source Location",
+        help="Departmental Stock Location",
+        tracking=True,
     )
     approve_request_ids = fields.One2many(
-        comodel_name="ng.ir.request.approve", inverse_name="request_id", string="Request Line", required=True
+        comodel_name="ng.ir.request.approve",
+        inverse_name="request_id",
+        string="Request Line",
+        required=True,
     )
     reason = fields.Text(string="Rejection Reason")
-    availaibility = fields.Boolean(string="Availaibility", compute="_compute_availabilty")
+    availaibility = fields.Boolean(
+        string="Availaibility", compute="_compute_availabilty"
+    )
     warehouse_id = fields.Many2one(comodel_name="stock.warehouse", string="Warehouse")
     company_id = fields.Many2one(
         "res.company",
@@ -78,7 +111,13 @@ class IRRequest(models.Model):
     @api.depends("approve_request_ids")
     def _compute_availabilty(self):
         count_total = len(self.approve_request_ids)
-        count_avail = len([appr_id.state for appr_id in self.approve_request_ids if appr_id.state == "available"])
+        count_avail = len(
+            [
+                appr_id.state
+                for appr_id in self.approve_request_ids
+                if appr_id.state == "available"
+            ]
+        )
         self.availaibility = count_total == count_avail
 
     @api.onchange("hod")
@@ -100,8 +139,12 @@ class IRRequest(models.Model):
             # fetch email template.
             recipient = self.recipient("hod", self.hod)
             url = self.request_link()
-            mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_submit")
-            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
+            mail_template = self.env.ref(
+                "ng_internal_requisition.ng_internal_requisition_submit"
+            )
+            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(
+                self.id, force_send=False
+            )
             self.write({"state": "submit"})
 
     def department_manager_approve(self):
@@ -121,8 +164,12 @@ class IRRequest(models.Model):
                 # move to next level and send mail
                 url = self.request_link()
                 recipient = self.recipient("department_manager", self.department)
-                mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_approval")
-                mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
+                mail_template = self.env.ref(
+                    "ng_internal_requisition.ng_internal_requisition_approval"
+                )
+                mail_template.with_context(
+                    {"recipient": recipient, "url": url}
+                ).send_mail(self.id, force_send=False)
                 self.write({"state": "approved"})
 
     def store_officer_approve(self):
@@ -138,9 +185,13 @@ class IRRequest(models.Model):
                 "target": "new",
             }
         else:
-            not_available = self.approve_request_ids.filtered(lambda r: r.state not in ["available", "awaiting"])
+            not_available = self.approve_request_ids.filtered(
+                lambda r: r.state not in ["available", "awaiting"]
+            )
             if not_available:
-                raise UserError("All items must be availaible before you can approve this record")
+                raise UserError(
+                    "All items must be availaible before you can approve this record"
+                )
             else:
                 # move to next level and send mail
                 self.write({"state": "audit"})
@@ -152,8 +203,12 @@ class IRRequest(models.Model):
         else:
             url = self.request_link()
             recipient = self.recipient("department_manager", self.department)
-            mail_template = self.env.ref("ng_internal_requisition.ng_internal_requisition_warehouse_officer")
-            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(self.id, force_send=False)
+            mail_template = self.env.ref(
+                "ng_internal_requisition.ng_internal_requisition_warehouse_officer"
+            )
+            mail_template.with_context({"recipient": recipient, "url": url}).send_mail(
+                self.id, force_send=False
+            )
             self.write({"state": "approval"})
 
     def check_quantity_available(self):
@@ -233,16 +288,22 @@ class IRRequest(models.Model):
                                 "Could not reserve all requested products. Please use the 'Mark as Todo' button to handle the reservation manually."
                             )
                         )
-            for move in picking.move_lines.filtered(lambda m: m.state not in ["done", "cancel"]):
+            for move in picking.move_lines.filtered(
+                lambda m: m.state not in ["done", "cancel"]
+            ):
                 for move_line in move.move_line_ids:
                     move_line.qty_done = move_line.product_uom_qty
 
         pickings_to_validate = picking_id.ids
         if pickings_to_validate:
-            pickings_to_validate = self.env["stock.picking"].browse(pickings_to_validate)
+            pickings_to_validate = self.env["stock.picking"].browse(
+                pickings_to_validate
+            )
             pickings_to_validate = pickings_to_validate - pickings_not_to_do
             pickings_to_validate.action_confirm()
-            return pickings_to_validate.with_context(skip_immediate=True).button_validate()
+            return pickings_to_validate.with_context(
+                skip_immediate=True
+            ).button_validate()
         return True
 
     def recipient(self, recipient, model):
@@ -269,9 +330,9 @@ class IRRequest(models.Model):
         fragment.update(model="ng.ir.request")
         fragment.update(view_type="form")
         fragment.update(
-            action=model_data.get_object_reference("ng_internal_requisition", "ng_internal_requisition_action_window")[
-                -1
-            ]
+            action=model_data.get_object_reference(
+                "ng_internal_requisition", "ng_internal_requisition_action_window"
+            )[-1]
         )
         fragment.update(id=self.id)
         query = {"db": self.env.cr.dbname}

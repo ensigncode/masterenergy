@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <menuitem id="menu_petty_cash" name="Petty Cash" groups="ng_petty_cash.group_petty_cash_manager" sequence="10" />
+        <menuitem id="menu_petty_cash_request" name="Petty Cash Request" parent="menu_petty_cash" sequence="20" />
+    </data>
+</odoo>

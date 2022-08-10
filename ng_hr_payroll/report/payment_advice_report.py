@@ -29,7 +29,10 @@ class payment_advice_report(models.AbstractModel):
     _auto = False
 
     name = fields.Char(string="Name", readonly=True)
-    date = fields.Date(string="Date", readonly=True,)
+    date = fields.Date(
+        string="Date",
+        readonly=True,
+    )
     year = fields.Char(string="Year", readonly=True)
     month = fields.Selection(
         selection=[
@@ -51,7 +54,11 @@ class payment_advice_report(models.AbstractModel):
     )
     day = fields.Char(string="Day", readonly=True)
     state = fields.Selection(
-        selection=[("draft", "Draft"), ("confirm", "Confirmed"), ("cancel", "Cancelled"),],
+        selection=[
+            ("draft", "Draft"),
+            ("confirm", "Confirmed"),
+            ("cancel", "Cancelled"),
+        ],
         string="State",
         index=True,
         readonly=True,

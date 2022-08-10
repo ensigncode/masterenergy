@@ -20,9 +20,13 @@ class PaymentRequestLine(models.Model):
     name = fields.Char("Description", required=True)
     request_amount = fields.Float("Requested Amount", required=True)
     approved_amount = fields.Float("Approved Amount")
-    payment_request_id = fields.Many2one("payment.requisition", string="Payment Request")
+    payment_request_id = fields.Many2one(
+        "payment.requisition", string="Payment Request"
+    )
     expense_account_id = fields.Many2one("account.account", "Account")
-    analytic_account_id = fields.Many2one("account.analytic.account", string="Analytic Account")
+    analytic_account_id = fields.Many2one(
+        "account.analytic.account", string="Analytic Account"
+    )
     state = fields.Char(compute="check_state", string="State")
     partner_id = fields.Many2one("res.partner", string="Customer/Vendor")
 
@@ -38,7 +42,12 @@ class PaymentRequest(models.Model):
     _name = "payment.requisition"
     _description = "Payment Requisition"
 
-    @api.depends("request_line", "request_line.request_amount", "request_line.approved_amount", "state")
+    @api.depends(
+        "request_line",
+        "request_line.request_amount",
+        "request_line.approved_amount",
+        "state",
+    )
     def _compute_requested_amount(self):
         for record in self:
             requested_amount = 0
@@ -56,33 +65,50 @@ class PaymentRequest(models.Model):
             current_currency = record.currency_id
             if company_currency != current_currency:
                 amount = company_currency.compute(requested_amount, current_currency)
-                approved_amount = company_currency.compute(approved_amount, current_currency)
+                approved_amount = company_currency.compute(
+                    approved_amount, current_currency
+                )
                 record.amount_company_currency = amount
                 record.approved_amount = approved_amount
                 record.requested_amount = requested_amount
 
     name = fields.Char("Name", default="/", copy=False)
-    requester_id = fields.Many2one("res.users", "Requester", required=True, default=lambda self: self.env.user)
+    requester_id = fields.Many2one(
+        "res.users", "Requester", required=True, default=lambda self: self.env.user
+    )
     employee_id = fields.Many2one("hr.employee", "Employee", required=True)
     department_id = fields.Many2one("hr.department", "Department")
     date = fields.Date(string="Date", default=fields.Date.context_today)
     description = fields.Text(string="Description")
     bank_id = fields.Many2one("res.bank", "Bank")
     bank_account = fields.Char("Bank Account", copy=False)
-    request_line = fields.One2many("payment.requisition.line", "payment_request_id", string="Lines", copy=False)
-    requested_amount = fields.Float(compute="_compute_requested_amount", string="Requested Amount", store=True)
-    approved_amount = fields.Float(compute="_compute_requested_amount", string="Approved Amount", store=True)
+    request_line = fields.One2many(
+        "payment.requisition.line", "payment_request_id", string="Lines", copy=False
+    )
+    requested_amount = fields.Float(
+        compute="_compute_requested_amount", string="Requested Amount", store=True
+    )
+    approved_amount = fields.Float(
+        compute="_compute_requested_amount", string="Approved Amount", store=True
+    )
     amount_company_currency = fields.Float(
-        compute="_compute_requested_amount", string="Amount In Company Currency", store=True
+        compute="_compute_requested_amount",
+        string="Amount In Company Currency",
+        store=True,
     )
     currency_id = fields.Many2one(
-        "res.currency", string="Currency", required=True, default=lambda self: self.env.user.company_id.currency_id.id
+        "res.currency",
+        string="Currency",
+        required=True,
+        default=lambda self: self.env.user.company_id.currency_id.id,
     )
     company_id = fields.Many2one(
         "res.company",
         "Company",
         required=True,
-        default=lambda self: self.env["res.company"]._company_default_get("payment.requisition"),
+        default=lambda self: self.env["res.company"]._company_default_get(
+            "payment.requisition"
+        ),
     )
     state = fields.Selection(
         [
@@ -102,12 +128,24 @@ class PaymentRequest(models.Model):
         string="State",
     )
 
-    need_gm_approval = fields.Boolean("Needs First Approval?", copy=False, readonly=True)
-    need_md_approval = fields.Boolean("Needs Final Approval?", copy=False, readonly=True)
-    general_manager_id = fields.Many2one("hr.employee", "General Manager", readonly=True)
-    manging_director_id = fields.Many2one("hr.employee", "Managing Director", readonly=True)
-    dept_manager_id = fields.Many2one("hr.employee", "Department Manager", readonly=True)
-    dept_manager_approve_date = fields.Date("Approved By Department Manager On", readonly=True)
+    need_gm_approval = fields.Boolean(
+        "Needs First Approval?", copy=False, readonly=True
+    )
+    need_md_approval = fields.Boolean(
+        "Needs Final Approval?", copy=False, readonly=True
+    )
+    general_manager_id = fields.Many2one(
+        "hr.employee", "General Manager", readonly=True
+    )
+    manging_director_id = fields.Many2one(
+        "hr.employee", "Managing Director", readonly=True
+    )
+    dept_manager_id = fields.Many2one(
+        "hr.employee", "Department Manager", readonly=True
+    )
+    dept_manager_approve_date = fields.Date(
+        "Approved By Department Manager On", readonly=True
+    )
     gm_approve_date = fields.Date("First Approved On", readonly=True)
     director_approve_date = fields.Date("Final Approved On", readonly=True)
     move_id = fields.Many2one("account.move", string="Journal Entry")
@@ -135,19 +173,27 @@ class PaymentRequest(models.Model):
 
     @api.onchange("requester_id")
     def onchange_requester(self):
-        employee = self.env["hr.employee"].search([("user_id", "=", self._uid)], limit=1)
+        employee = self.env["hr.employee"].search(
+            [("user_id", "=", self._uid)], limit=1
+        )
         self.employee_id = employee.id
-        self.department_id = employee.department_id and employee.department_id.id or False
+        self.department_id = (
+            employee.department_id and employee.department_id.id or False
+        )
 
     def action_confirm(self):
         if not self.request_line:
-            raise exceptions.Warning(_("Can not confirm request without request lines."))
+            raise exceptions.Warning(
+                _("Can not confirm request without request lines.")
+            )
         body = _(
             "<p>Payment Requisition request %s has been confirmed by <b>%s</b>.</p> <p>Please check and approve.</p>"
             % (self.name, self.env.user.partner_id.name)
         )
         subject = _("Payment Requisition %s" % (self.name,))
-        self.notify(body, subject, group="masterenergy_base_approval.group_internal_audit")
+        self.notify(
+            body, subject, group="masterenergy_base_approval.group_internal_audit"
+        )
         return self.write({"state": "audit"})
 
     def action_audit_approve(self):
@@ -156,7 +202,9 @@ class PaymentRequest(models.Model):
             % (self.name, self.env.user.partner_id.name)
         )
         subject = _("Payment Requisition %s" % (self.name,))
-        self.notify(body, subject, group="masterenergy_base_approval.group_plant_manager")
+        self.notify(
+            body, subject, group="masterenergy_base_approval.group_plant_manager"
+        )
         return self.write({"state": "plant_manager"})
 
     def action_plant_manager_approve(self):
@@ -166,10 +214,14 @@ class PaymentRequest(models.Model):
         )
         subject = _("Payment Requisition %s" % (self.name,))
         if self.approved_amount > self.company_id.plant_manager_limit:
-            self.notify(body, subject, group="masterenergy_base_approval.group_group_auditor")
+            self.notify(
+                body, subject, group="masterenergy_base_approval.group_group_auditor"
+            )
             return self.write({"state": "group_audit"})
         else:
-            self.notify(body, subject, group="masterenergy_base_approval.group_group_auditor")
+            self.notify(
+                body, subject, group="masterenergy_base_approval.group_group_auditor"
+            )
             # Todo fix state
             return self.write({"state": "group_audit"})
 
@@ -245,9 +297,13 @@ class PaymentRequest(models.Model):
             journal_id = record.journal_id.id
             partner_id = record.employee_id.address_home_id
             if not partner_id:
-                raise exceptions.Warning(_("Please specify Employee Home Address in the Employee Form!."))
+                raise exceptions.Warning(
+                    _("Please specify Employee Home Address in the Employee Form!.")
+                )
             for line in record.request_line:
-                amount_line = current_currency.compute(line.approved_amount, company_currency)
+                amount_line = current_currency.compute(
+                    line.approved_amount, company_currency
+                )
                 move_line_obj.with_context(check_move_validity=False).create(
                     {
                         "name": asset_name,
@@ -259,7 +315,9 @@ class PaymentRequest(models.Model):
                         "journal_id": journal_id,
                         "partner_id": partner_id.id,
                         "customer_id": line.partner_id.id,
-                        "currency_id": company_currency.id != current_currency.id and current_currency.id or False,
+                        "currency_id": company_currency.id != current_currency.id
+                        and current_currency.id
+                        or False,
                         "amount_currency": company_currency.id != current_currency.id
                         and sign * line.approved_amount
                         or 0.0,
@@ -280,7 +338,9 @@ class PaymentRequest(models.Model):
                     "journal_id": journal_id,
                     "partner_id": partner_id.id,
                     "customer_id": line.partner_id.id,
-                    "currency_id": company_currency.id != current_currency.id and current_currency.id or False,
+                    "currency_id": company_currency.id != current_currency.id
+                    and current_currency.id
+                    or False,
                     "amount_currency": company_currency.id != current_currency.id
                     and sign * record.approved_amount
                     or 0.0,
@@ -293,7 +353,9 @@ class PaymentRequest(models.Model):
                 amount = -1 * record.approved_amount
                 account = record.journal_id.default_debit_account_id.id
                 if not record.journal_id.type == "cash":
-                    raise exceptions.Warning(_("Journal should match with selected cash register journal."))
+                    raise exceptions.Warning(
+                        _("Journal should match with selected cash register journal.")
+                    )
                 stline_vals = {
                     "name": record.name or "?",
                     "amount": amount,

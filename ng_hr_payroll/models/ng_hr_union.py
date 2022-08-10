@@ -45,12 +45,24 @@ class employee_notice(models.Model):
         # OR if it starts between the given dates
         clause_2 = ["&", ("date_start", "<=", date_to), ("date_start", ">=", date_from)]
         # OR if it starts before the date_from and finish after the date_end (or never finish)
-        clause_3 = [("date_start", "<=", date_from), "|", ("date_end", "=", False), ("date_end", ">=", date_to)]
-        clause_final = [("employee_id", "=", employee.id), "|", "|"] + clause_1 + clause_2 + clause_3
+        clause_3 = [
+            ("date_start", "<=", date_from),
+            "|",
+            ("date_end", "=", False),
+            ("date_end", ">=", date_to),
+        ]
+        clause_final = (
+            [("employee_id", "=", employee.id), "|", "|"]
+            + clause_1
+            + clause_2
+            + clause_3
+        )
         contract_ids = contract_obj.search(clause_final)
         return contract_ids
 
-    def onchange_cat_id(self, cat_id=False, emp_id=False, days=False, reason=False, r_date=False):
+    def onchange_cat_id(
+        self, cat_id=False, emp_id=False, days=False, reason=False, r_date=False
+    ):
         res = {}
         hr_obj = self.env["hr.employee"]
         not_obj = self.env["notice.period"]
@@ -81,7 +93,11 @@ class employee_notice(models.Model):
                 elif notes.emp_base == "basic":
                     res.update({"emp_pay": wage, "company_pay": 0})
                 else:
-                    domain = [("employee_id", "=", emp_id), ("contract_id", "=", contract_id), ("code", "=", "GROSS")]
+                    domain = [
+                        ("employee_id", "=", emp_id),
+                        ("contract_id", "=", contract_id),
+                        ("code", "=", "GROSS"),
+                    ]
                     line_ids = self.env["hr.payslip.line"].search(domain, limit=1)
                     if line_ids:
                         line = line_ids
@@ -92,14 +108,20 @@ class employee_notice(models.Model):
             elif notes.emp_base == "basic":
                 res.update({"emp_pay": 0, "company_pay": wage})
             else:
-                domain = [("employee_id", "=", emp_id), ("contract_id", "=", contract_id), ("code", "=", "GROSS")]
+                domain = [
+                    ("employee_id", "=", emp_id),
+                    ("contract_id", "=", contract_id),
+                    ("code", "=", "GROSS"),
+                ]
                 line_ids = self.env["hr.payslip.line"].search(domain, limit=1)
                 if line_ids:
                     line = line_ids
                     res.update({"emp_pay": line.amount, "company_pay": 0})
             return {"value": res}
 
-    def onchange_days(self, days=False, employee_id=False, category_id=False, reason=False):
+    def onchange_days(
+        self, days=False, employee_id=False, category_id=False, reason=False
+    ):
         res = {}
         hr_obj = self.env["hr.employee.category"]
         if not reason:
@@ -151,9 +173,17 @@ class employee_notice(models.Model):
 
     _inherit = ["mail.thread"]
 
-    name = fields.Char(string="Description", required=True, readonly=False, states={"validate": [("readonly", True)]})
+    name = fields.Char(
+        string="Description",
+        required=True,
+        readonly=False,
+        states={"validate": [("readonly", True)]},
+    )
     user_id = fields.Many2one(
-        "res.users", string="Responsible User", readonly=False, states={"validate": [("readonly", True)]}
+        "res.users",
+        string="Responsible User",
+        readonly=False,
+        states={"validate": [("readonly", True)]},
     )
     employee_id = fields.Many2one(
         "hr.employee",
@@ -171,10 +201,16 @@ class employee_notice(models.Model):
         states={"validate": [("readonly", True)]},
     )
     resigning_date = fields.Date(
-        string="Resign Date", required=True, readonly=False, states={"validate": [("readonly", True)]}
+        string="Resign Date",
+        required=True,
+        readonly=False,
+        states={"validate": [("readonly", True)]},
     )
     exit_date = fields.Date(
-        string="Exit Date", required=True, readonly=False, states={"validate": [("readonly", True)]}
+        string="Exit Date",
+        required=True,
+        readonly=False,
+        states={"validate": [("readonly", True)]},
     )
     notes = fields.Text(string="Notes")
     company_id = fields.Many2one(
@@ -258,9 +294,18 @@ class union_policy(models.Model):
         "category_id",
         string="Employee Categories",
     )
-    employee_ids = fields.Many2many("hr.employee", "union_employee_rel", "union_id", "employee_id", string="Employee's")
+    employee_ids = fields.Many2many(
+        "hr.employee",
+        "union_employee_rel",
+        "union_id",
+        "employee_id",
+        string="Employee's",
+    )
     company_id = fields.Many2one(
-        "res.company", string="Company", required=False, default=lambda self: self.env.user.company_id
+        "res.company",
+        string="Company",
+        required=False,
+        default=lambda self: self.env.user.company_id,
     )
     base = fields.Selection(
         selection=[("basic", "Based On Basic"), ("fixed", "Fix Amount"), ("", "")],
@@ -284,10 +329,17 @@ class union(models.Model):
     name = fields.Char(string="Name", required=True)
     code = fields.Char(string="Code")
     company_id = fields.Many2one(
-        "res.company", string="Company", required=True, default=lambda self: self.env.user.company_id
+        "res.company",
+        string="Company",
+        required=True,
+        default=lambda self: self.env.user.company_id,
     )
     union_policy_ids = fields.Many2many(
-        "union.policy", "union_policy_rel", "policy_id", "loan_id", string="Active Policies"
+        "union.policy",
+        "union_policy_rel",
+        "policy_id",
+        "loan_id",
+        string="Active Policies",
     )
 
 
@@ -296,14 +348,22 @@ class hr_employee_category(models.Model):
     _description = "Employee Category"
 
     union_policy = fields.Many2many(
-        "union.policy", "employee_category_policy_rel_union", "category_id", "union_id", string="Union Policies"
+        "union.policy",
+        "employee_category_policy_rel_union",
+        "category_id",
+        "union_id",
+        string="Union Policies",
     )
-    notice_period = fields.Float(string="Notice Period Allowed", help="Please enter notice period in days")
+    notice_period = fields.Float(
+        string="Notice Period Allowed", help="Please enter notice period in days"
+    )
     company_pay = fields.Float(
-        string="Company Payment", help="Give the amount company has to pay to its employee based on policy"
+        string="Company Payment",
+        help="Give the amount company has to pay to its employee based on policy",
     )
     emp_pay = fields.Float(
-        string="Employee Payment", help="Give the amount employee has to pay to his/her company based on policy"
+        string="Employee Payment",
+        help="Give the amount employee has to pay to his/her company based on policy",
     )
 
 
@@ -312,6 +372,16 @@ class hr_employee(models.Model):
     _description = "Employee"
 
     union_policy = fields.Many2many(
-        "union.policy", "union_employee_rel", "employee_id", "union_id", string="Union Policies"
+        "union.policy",
+        "union_employee_rel",
+        "employee_id",
+        "union_id",
+        string="Union Policies",
     )
-    union_ids = fields.Many2many("emp.union", "union_employee_master_rel1", "employee_id", "u_id", string="Unions")
+    union_ids = fields.Many2many(
+        "emp.union",
+        "union_employee_master_rel1",
+        "employee_id",
+        "u_id",
+        string="Unions",
+    )

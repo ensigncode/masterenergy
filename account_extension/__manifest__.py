@@ -9,7 +9,10 @@
     """,
     "category": "Account",
     "depends": ["account", "account_reports"],
-    "data": ["data/data_analytic_account.xml", "views/account_views.xml",],
+    "data": [
+        "data/data_analytic_account.xml",
+        "views/account_views.xml",
+    ],
     #'demo': ['data/data_analytic_account.xml'],
     "installable": True,
     "auto_install": False,

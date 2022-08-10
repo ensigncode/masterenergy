@@ -8,9 +8,14 @@ class yearly_carry_fw(models.Model):
     _description = "carry.fw"
 
     date_from = fields.Date(
-        string="Start Date", required=True, help="Start date of last year", default=time.strftime("%Y-01-01")
+        string="Start Date",
+        required=True,
+        help="Start date of last year",
+        default=time.strftime("%Y-01-01"),
     )
-    date_to = fields.Date(string="End Date", required=True, help="End date of last year")
+    date_to = fields.Date(
+        string="End Date", required=True, help="End date of last year"
+    )
     type = fields.Selection(
         selection=[("all", "All"), ("none", "None"), ("few", "Number Of Days")],
         string="Type",
@@ -46,7 +51,9 @@ class yearly_carry_fw(models.Model):
                     leaves[e.id] = {}
                 if t.holiday_type == "employee" and t.employee_id.id == e.id:
                     if not t.holiday_status_id.id in leaves[e.id]:
-                        leaves[e.id].update({t.holiday_status_id.id: t.number_of_days_temp})
+                        leaves[e.id].update(
+                            {t.holiday_status_id.id: t.number_of_days_temp}
+                        )
                     else:
                         leaves[e.id][t.holiday_status_id.id] += t.number_of_days_temp
                 #                elif t.holiday_type == 'category':
@@ -77,13 +84,20 @@ class yearly_carry_fw(models.Model):
             if not l.employee_id.id in leaves1:
                 leaves1[l.employee_id.id] = {}
             if not l.holiday_status_id.id in leaves1[l.employee_id.id]:
-                leaves1[l.employee_id.id][l.holiday_status_id.id] = l.number_of_days_temp
+                leaves1[l.employee_id.id][
+                    l.holiday_status_id.id
+                ] = l.number_of_days_temp
             else:
-                leaves1[l.employee_id.id][l.holiday_status_id.id] += l.number_of_days_temp
+                leaves1[l.employee_id.id][
+                    l.holiday_status_id.id
+                ] += l.number_of_days_temp
         for t, m in leaves.items():
             for k, s in m.items():
                 if not t in leaves1:
-                    name = "Carry Forwarded " + self.env["hr.holidays.status"].browse(k)[0].name
+                    name = (
+                        "Carry Forwarded "
+                        + self.env["hr.holidays.status"].browse(k)[0].name
+                    )
                     vals = {
                         "employee_id": t,
                         "holiday_status_id": k,
@@ -100,7 +114,10 @@ class yearly_carry_fw(models.Model):
                         pass
                     if leaves1[t][k] < s:
                         diff = s - leaves1[t][k]
-                        name = "Carry Forwarded " + self.env["hr.holidays.status"].browse(k).name
+                        name = (
+                            "Carry Forwarded "
+                            + self.env["hr.holidays.status"].browse(k).name
+                        )
                         vals = {
                             "state": "draft",
                             "employee_id": t,
