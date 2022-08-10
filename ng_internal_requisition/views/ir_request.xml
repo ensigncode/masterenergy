@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <!-- explicit list view definition colors="grey:state == 'done'" -->
-        <record model="ir.ui.view" id="ng_internal_requisition.list">
+        <record model="ir.ui.view" id="ng_internal_requisition_list">
             <field name="name">ng_internal_requisition list</field>
             <field name="model">ng.ir.request</field>
             <field name="arch" type="xml">
@@ -16,7 +16,7 @@
                 </tree>
             </field>
         </record>
-        <record id="ng_internal_requisition_form_1" model="ir.ui.view">
+        <record id="ng_internal_requisition_form_1_01" model="ir.ui.view">
             <field name="name">ng_internal_requisition form</field>
             <field name="model">ng.ir.request</field>
             <field name="arch" type="xml">
