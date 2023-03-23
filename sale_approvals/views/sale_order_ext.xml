@@ -51,10 +51,10 @@
                     <field name="authorized_transaction_ids" invisible="1"/>
                     <button name="payment_action_capture" type="object" string="Capture Transaction" class="oe_highlight" attrs="{'invisible': [('authorized_transaction_ids', '=', [])]}"/>
                     <button name="payment_action_void" type="object" string="Void Transaction" confirm="Are you sure you want to void the authorized transaction? This action can't be undone." attrs="{'invisible': [('authorized_transaction_ids', '=', [])]}"/>
-                    <button name="584" string="Create Invoice" type="action" class="btn-primary" attrs="{'invisible': [('invoice_status', '!=', 'to invoice')]}"/>
-                    <button name="584" string="Create Invoice" type="action" context="{'default_advance_payment_method': 'percentage'}" attrs="{'invisible': ['|',('invoice_status', '!=', 'no'), ('state', '!=', 'sale')]}"/>
-                    <button name="send_to_sm" attrs="{'invisible': [('state', 'not in', ['draft', 'sent'])]}"
-                        string="Send for Approvals" type="object" class="oe_highlight"/>
+                    <button name="%(sale.action_view_sale_advance_payment_inv)d" string="Create Invoice" type="action" class="btn-primary" attrs="{'invisible': [('invoice_status', '!=', 'to invoice')]}"/>
+                    <button name="%(sale.action_view_sale_advance_payment_inv)d" string="Create Invoice" type="action" context="{'default_advance_payment_method': 'percentage'}" attrs="{'invisible': ['|',('invoice_status', '!=', 'no'), ('state', '!=', 'sale')]}"/>
+                   <!--  <button name="send_to_sm" attrs="{'invisible': [('state', 'not in', ['draft', 'sent'])]}"
+                        string="Send for Approvals" type="object" class="oe_highlight"/> -->
                     <button name="action_quotation_send" string="Send by Email" type="object" states="draft" class="btn-primary"/>
                     <button name="action_quotation_send" type="object" string="Send PRO-FORMA Invoice" groups="sale.group_proforma_sales" class="btn-primary" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('invoice_count','&gt;=',1)]}" context="{'proforma': True}"/>
                     <button name="action_confirm" id="action_confirm" string="Confirm" class="btn-primary" type="object" attrs="{'invisible': [('state', 'not in', ['approved'])]}"/>
@@ -72,7 +72,12 @@
                             string="Approve" type="object" class="oe_highlight" groups="sale_approvals.ccm_app" context="{'not_unlink_on_discard': True}"/>
                     <button name="button_reject_ccm" attrs="{'invisible': [('state', '!=', 'ccm')]}"
                             string="Reject" type="object" groups="sale_approvals.ccm_app" context="{'not_unlink_on_discard': True}"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,sm,ccm,sent,sale"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,sale" readonly="1" />
+                    <button name="action_submit_to_hod" states="draft" string="Submit" type="object" class="oe_highlight"/>
+                    <button name="action_hod_approve" class="oe_highlight" states="hod" string="Approve" type="object" />
+                    <button name="action_audit_approve" class="oe_highlight" states="audit" string="Approve" type="object" />
+                    <button name="button_approve" type="object" states='to approve' string="Approve Order" class="oe_highlight" groups="sale_approvals.group_plant_manager" />
                 </header>
                 </xpath>
             </field>
